@@ -5,20 +5,19 @@ import { UserService } from "./UserService";
 
 describe(UserService, () => {
   let prisma: PrismaClient;
-  beforeEach(() => {
-    prisma = jestPrisma.client;
-  });
+  beforeEach(() => (prisma = jestPrisma.client));
 
   test("Add user", async () => {
     const service = new UserService(prisma);
-    await service.addUser("quramy");
+    const createdUser = await service.addUser("quramy");
+
     expect(
       await prisma.user.findFirst({
         where: {
           name: "quramy",
         },
       }),
-    ).not.toBeNull();
+    ).toStrictEqual(createdUser);
   });
 
   test("No users", async () => {
