@@ -15,6 +15,9 @@
     "environment.js",
     "lib/**/*"
   ],
+  "dependencies": {
+    "chalk": "^4.0.0"
+  },
   "peerDependencies": {
     "@prisma/client": "^2.29.0 || ^3.0.0",
     "@jest/environment": "*",

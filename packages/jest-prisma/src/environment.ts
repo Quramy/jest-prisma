@@ -1,16 +1,28 @@
 import type { Event } from "jest-circus";
+import type { Circus } from "@jest/types";
 import type { JestEnvironmentConfig, EnvironmentContext } from "@jest/environment";
+import chalk from "chalk";
 import NodeEnvironment from "jest-environment-node";
 
 import { PrismaClient, Prisma } from "@prisma/client";
 
-import type { JestPrisma } from "./types";
+import type { JestPrisma, JestPrismaEnvironmentOptions } from "./types";
 
-const _prisma = new PrismaClient();
+let logBuffer: Prisma.QueryEvent[] | undefined = undefined;
+
+const _prisma = new PrismaClient({
+  log: [{ level: "query", emit: "event" }],
+});
+
+_prisma.$on("query", event => {
+  logBuffer?.push(event);
+});
 
 export default class PrismaEnvironment extends NodeEnvironment {
   private prismaClientProxy!: PrismaClient;
   private triggerTransactionEnd: () => void = () => null;
+  private readonly options: JestPrismaEnvironmentOptions;
+  private readonly testPath: string;
 
   getClient() {
     return this.prismaClientProxy;
@@ -18,6 +30,8 @@ export default class PrismaEnvironment extends NodeEnvironment {
 
   constructor(config: JestEnvironmentConfig, context: EnvironmentContext) {
     super(config, context);
+    this.options = config.projectConfig.testEnvironmentOptions as JestPrismaEnvironmentOptions;
+    this.testPath = context.testPath.replace(config.globalConfig.rootDir, "").slice(1);
   }
 
   async setup() {
@@ -36,6 +50,11 @@ export default class PrismaEnvironment extends NodeEnvironment {
       return this.beginTransaction();
     } else if (event.name === "test_done") {
       return this.endTransaction();
+    } else if (event.name === "test_fn_start") {
+      logBuffer = [];
+    } else if (event.name === "test_fn_success" || event.name === "test_fn_failure") {
+      this.dumpQueryLog(event.test);
+      logBuffer = undefined;
     }
   }
 
@@ -50,7 +69,9 @@ export default class PrismaEnvironment extends NodeEnvironment {
         .$transaction(transactionClient => {
           this.prismaClientProxy = createProxy(transactionClient);
           resolve();
-          return new Promise((_, reject) => (this.triggerTransactionEnd = reject));
+          return new Promise(
+            (resolve, reject) => (this.triggerTransactionEnd = this.options.disableRollback ? resolve : reject),
+          );
         })
         .catch(() => true),
     );
@@ -58,6 +79,22 @@ export default class PrismaEnvironment extends NodeEnvironment {
 
   private async endTransaction() {
     this.triggerTransactionEnd();
+  }
+
+  private dumpQueryLog(test: Circus.TestEntry) {
+    if (this.options.verboseQuery && logBuffer) {
+      let parentBlock: Circus.DescribeBlock | undefined | null = test.parent;
+      const nameFragments: string[] = [test.name];
+      while (!!parentBlock) {
+        nameFragments.push(parentBlock.name);
+        parentBlock = parentBlock.parent;
+      }
+      const breadcrumb = [this.testPath, ...nameFragments.reverse().slice(1)].join(" > ");
+      console.log(chalk.bgBlue.bold.black(" QUERY ") + " " + chalk.gray(breadcrumb));
+      for (const event of logBuffer) {
+        console.log(`${chalk.blue("  jest-prisma:query")} ${event.query}`);
+      }
+    }
   }
 }
 

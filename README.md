@@ -55,6 +55,31 @@ describe(UserService, () => {
 });
 ```
 
+## Configuration
+
+```js
+/* jest.confit.js */
+module.exports = {
+  testEnvironment: "@quramy/jest-prisma/environment",
+  testEnvironmentOptions: {
+    verboseQuery: true,
+  },
+};
+```
+
+Alternatively, you can use `@jest-environment-options` pragma:
+
+```js
+/**
+ *
+ * @jest-environment-options: { "verboseQuery": true }
+ *
+ */
+test("it should execute prisma client", () => {
+  /* .... */
+});
+```
+
 ## References
 
 ### `global.jestPrisma`
@@ -68,6 +93,26 @@ export interface JestPrisma {
    *
    */
   readonly client: PrismaClient;
+}
+```
+
+### Environment options
+
+```ts
+export interface JestPrismaEnvironmentOptions {
+  /**
+   *
+   * If set true, each transaction is not rolled back but committed.
+   *
+   */
+  readonly disableRollback?: boolean;
+
+  /**
+   *
+   * Display SQL queries in test cases to STDOUT.
+   *
+   */
+  readonly verboseQuery?: boolean;
 }
 ```
 

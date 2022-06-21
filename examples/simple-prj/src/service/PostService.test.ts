@@ -1,3 +1,8 @@
+/**
+ *
+ * @jest-environment-options { "verboseQuery": true }
+ *
+ */
 import "@quramy/jest-prisma";
 
 import type { PrismaClient } from "@prisma/client";
