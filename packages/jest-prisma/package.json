@@ -1,6 +1,6 @@
 {
   "name": "@quramy/jest-prisma",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.1",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "exports": {
@@ -23,7 +23,8 @@
   "scripts": {
     "bootstrap": "tsc",
     "test:ci": "echo \"test\"",
-    "test": "echo \"test\""
+    "test": "echo \"test\"",
+    "prepublish": "cp ../../README.md ./"
   },
   "keywords": [],
   "author": "Quramy",
