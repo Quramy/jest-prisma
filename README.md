@@ -50,21 +50,17 @@ generator client {
 Global object `jestPrisma` is provided within jest-prisma environment. And Prisma client instance is available via `jestPrisma.client`
 
 ```ts
-import { PrismaClient } from "@prisma/client";
-import { UserService } from "./UserService";
-
 describe(UserService, () => {
-  let prisma: PrismaClient;
-  beforeEach(() => {
-    // jestPrisma.client works with transaction rolled-back automatically after each test case end.
-    prisma = jestPrisma.client;
-  });
+  // jestPrisma.client works with transaction rolled-back automatically after each test case end.
+  const prisma = jestPrisma.client;
 
   test("Add user", async () => {
-    const service = new UserService(prisma);
-
-    // `prisma.user.create` is executed in this service
-    const createdUser = await service.addUser("quramy");
+    const createdUser = await prisma.user.create({
+      data: {
+        id: "001",
+        name: "quramy",
+      },
+    });
 
     expect(
       await prisma.user.findFirst({
@@ -74,6 +70,10 @@ describe(UserService, () => {
       }),
     ).toStrictEqual(createdUser);
   });
+
+  test("Count user", async () => {
+    expect(await prisma.user.count()).toBe(0);
+  });
 });
 ```
 
@@ -82,7 +82,7 @@ describe(UserService, () => {
 You can pass some options using `testEnvironmentOptions`.
 
 ```js
-/* jest.confit.mjs */
+/* jest.config.mjs */
 export default {
   testEnvironment: "@quramy/jest-prisma/environment",
   testEnvironmentOptions: {
@@ -101,6 +101,73 @@ Alternatively, you can use `@jest-environment-options` pragma in your test file:
  */
 test("it should execute prisma client", () => {
   /* .... */
+});
+```
+
+## Tips
+
+### Singleton
+
+If your project uses singleton Prisma client instance, such as:
+
+```ts
+/* src/client.ts */
+import { PrismaClient } from "@prisma/client";
+
+export const prisma = new PrismaClient();
+```
+
+```ts
+/* src/userService.ts */
+
+import { prisma } from "./client.ts";
+
+export function findUserById(id: string) {
+  const result = await prisma.user.findUnique({
+    where: { id },
+  });
+  return result;
+}
+```
+
+You can replace the singleton instance to `jestPrisma.client` via `jest.mock`.
+
+```js
+/* setup-prisma.js */
+
+jest.mock("./src/client", () => {
+  return {
+    prisma: jestPrisma.client,
+  };
+});
+```
+
+```js
+/* jest.config.mjs */
+export default {
+  testEnvironment: "@quramy/jest-prisma/environment",
+  setupFilesAfterEnv: ["<rootDir>/setup-prisma.js"],
+};
+```
+
+```ts
+import { prisma } from "./client";
+
+import { findUserById } from "./userService";
+
+describe("findUserById", () => {
+  beforeEach(async () => {
+    await prisma.user.create({
+      data: {
+        id: "test_user_id",
+      },
+    });
+  });
+
+  it("should return user", async () => {
+    await findUserById("test_user_id");
+    // assertion
+  });
 });
 ```
 

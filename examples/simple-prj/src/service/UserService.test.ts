@@ -3,12 +3,10 @@
  * @jest-environment-options { "verboseQuery": true }
  *
  */
-import { PrismaClient } from "@prisma/client";
 import { UserService } from "./UserService";
 
 describe(UserService, () => {
-  let prisma: PrismaClient;
-  beforeEach(() => (prisma = jestPrisma.client));
+  const prisma = jestPrisma.client;
 
   test("Add user", async () => {
     const service = new UserService(prisma);
@@ -24,6 +22,6 @@ describe(UserService, () => {
   });
 
   test("No users", async () => {
-    expect((await prisma.user.findMany()).length).toBe(0);
+    expect(await prisma.user.count()).toBe(0);
   });
 });

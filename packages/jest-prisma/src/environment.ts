@@ -36,11 +36,10 @@ export default class PrismaEnvironment extends NodeEnvironment {
 
   async setup() {
     await super.setup();
-    const getClient = this.getClient.bind(this);
     const jestPrisma: JestPrisma = {
-      get client() {
-        return getClient();
-      },
+      client: new Proxy<PrismaClient>({} as never, {
+        get: (_, name: keyof PrismaClient) => this.prismaClientProxy[name],
+      }),
     };
     this.global.jestPrisma = jestPrisma;
   }

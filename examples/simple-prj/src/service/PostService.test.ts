@@ -3,12 +3,10 @@
  * @jest-environment-options { "verboseQuery": true }
  *
  */
-import type { PrismaClient } from "@prisma/client";
 import { PostService } from "./PostService";
 
 describe(PostService, () => {
-  let prisma: PrismaClient;
-  beforeEach(() => (prisma = jestPrisma.client));
+  const prisma = jestPrisma.client;
 
   describe("getPosts", () => {
     describe("when posts data exsits", () => {
