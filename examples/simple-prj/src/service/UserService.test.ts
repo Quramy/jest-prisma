@@ -3,8 +3,6 @@
  * @jest-environment-options { "verboseQuery": true }
  *
  */
-import "@quramy/jest-prisma";
-
 import { PrismaClient } from "@prisma/client";
 import { UserService } from "./UserService";
 
