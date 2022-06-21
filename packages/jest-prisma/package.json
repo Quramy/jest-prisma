@@ -15,6 +15,11 @@
     "environment.js",
     "lib/**/*"
   ],
+  "homepage": "https://github.com/Quramy/jest-prisma",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Quramy/jest-prisma.git"
+  },
   "dependencies": {
     "chalk": "^4.0.0"
   },
@@ -30,7 +35,11 @@
     "test": "echo \"test\"",
     "prepublish": "cp ../../README.md ./"
   },
-  "keywords": [],
+  "keywords": [
+    "jest",
+    "jest-environment",
+    "prisma"
+  ],
   "author": "Quramy",
   "license": "MIT"
 }
