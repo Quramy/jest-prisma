@@ -1,6 +1,6 @@
 {
   "name": "@quramy/jest-prisma",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "exports": {
@@ -12,6 +12,7 @@
     }
   },
   "files": [
+    "environment.js",
     "lib/**/*"
   ],
   "peerDependencies": {
