@@ -1,0 +1,22 @@
+{
+  "private": true,
+  "name": "simple-prj",
+  "scripts": {
+    "bootstrap": "npm run generate",
+    "generate": "prisma generate",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@quramy/jest-prisma": "*",
+    "@types/jest": "^28.1.2",
+    "jest": "^28.1.1",
+    "prisma": "^3.15.2",
+    "ts-jest": "^28.0.5"
+  },
+  "dependencies": {
+    "@prisma/client": "^3.15.2",
+    "@types/uuid": "^8.3.4",
+    "sqlite": "^4.1.1",
+    "uuid": "^8.3.2"
+  }
+}

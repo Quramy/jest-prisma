@@ -1,0 +1,30 @@
+{
+  "name": "@quramy/jest-prisma",
+  "version": "1.0.0-alpha.0",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./environment": {
+      "default": "./environment.js"
+    }
+  },
+  "files": [
+    "lib/**/*"
+  ],
+  "peerDependencies": {
+    "@prisma/client": "^2.29.0 || ^3.0.0",
+    "@jest/environment": "*",
+    "jest-circus": "*",
+    "jest-environment-node": "*"
+  },
+  "scripts": {
+    "bootstrap": "tsc",
+    "test": "echo \"test\""
+  },
+  "keywords": [],
+  "author": "Quramy",
+  "license": "MIT"
+}
