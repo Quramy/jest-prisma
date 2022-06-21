@@ -3,7 +3,10 @@
   "name": "@quramy/jest-prisma-workspaces",
   "scripts": {
     "bootstrap": "npm run bootstrap --workspaces",
+    "migrate:test": "npm run migrate:test --workspace examples/simple-prj",
+    "test:ci": "npm run test",
     "test": "npm run test --workspaces",
+    "lint": "npm run prettier -- --check",
     "format": "npm run prettier -- --write",
     "prettier": "prettier ."
   },

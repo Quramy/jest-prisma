@@ -3,6 +3,7 @@
   "name": "simple-prj",
   "scripts": {
     "bootstrap": "npm run generate",
+    "migrate:test": "prisma migrate dev",
     "generate": "prisma generate",
     "test": "jest"
   },
