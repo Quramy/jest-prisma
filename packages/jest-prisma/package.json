@@ -22,6 +22,7 @@
   },
   "scripts": {
     "bootstrap": "tsc",
+    "test:ci": "echo \"test\"",
     "test": "echo \"test\""
   },
   "keywords": [],

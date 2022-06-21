@@ -4,8 +4,8 @@
   "scripts": {
     "prepare": "husky install",
     "bootstrap": "npm run bootstrap --workspace examples/simple-prj && npm run bootstrap --workspace packages/jest-prisma",
-    "migrate:test": "npm run migrate:test --workspace examples/simple-prj",
-    "test:ci": "npm run test",
+    "migrate:test": "npm run migrate:test:ci --workspace examples/simple-prj",
+    "test:ci": "npm run test:ci --workspaces",
     "test": "npm run test --workspaces",
     "lint": "npm run prettier -- --check",
     "format": "npm run prettier -- --write",
