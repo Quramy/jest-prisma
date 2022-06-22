@@ -26,7 +26,7 @@ jobs:
           npm ci
           npm run bootstrap
           cd packages/jest-prisma
-          npm run prepubulish
+          npm run prepublish 
           npm publish
         if: contains(github.ref, 'tags/v')
         env:
