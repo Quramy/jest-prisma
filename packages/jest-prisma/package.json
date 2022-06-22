@@ -25,8 +25,6 @@
   },
   "peerDependencies": {
     "@prisma/client": "^2.29.0 || ^3.0.0",
-    "@jest/environment": "*",
-    "jest-circus": "*",
     "jest-environment-node": "*"
   },
   "scripts": {
