@@ -1,6 +1,6 @@
-import type { Event } from "jest-circus";
 import type { Circus } from "@jest/types";
 import type { JestEnvironmentConfig, EnvironmentContext } from "@jest/environment";
+
 import chalk from "chalk";
 import NodeEnvironment from "jest-environment-node";
 
@@ -44,7 +44,7 @@ export default class PrismaEnvironment extends NodeEnvironment {
     this.global.jestPrisma = jestPrisma;
   }
 
-  handleTestEvent(event: Event) {
+  handleTestEvent(event: Circus.Event) {
     if (event.name === "test_start") {
       return this.beginTransaction();
     } else if (event.name === "test_done") {
@@ -89,7 +89,7 @@ export default class PrismaEnvironment extends NodeEnvironment {
         parentBlock = parentBlock.parent;
       }
       const breadcrumb = [this.testPath, ...nameFragments.reverse().slice(1)].join(" > ");
-      console.log(chalk.bgBlue.bold.black(" QUERY ") + " " + chalk.gray(breadcrumb));
+      console.log(chalk.blue.bold.inverse(" QUERY ") + " " + chalk.gray(breadcrumb));
       for (const event of logBuffer) {
         console.log(`${chalk.blue("  jest-prisma:query")} ${event.query}`);
       }
