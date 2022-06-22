@@ -24,7 +24,7 @@ jobs:
           echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > ~/.npmrc
           npm whoami
           npm ci
-          npm bootstrap
+          npm run bootstrap
           cd packages/jest-prisma
           npm run prepubulish
           npm publish
