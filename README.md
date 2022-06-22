@@ -1,5 +1,9 @@
 # jest-prisma
 
+[![github actions](https://github.com/Quramy/jest-prisma/workflows/build/badge.svg)](https://github.com/Quramy/jest-prisma/actions)
+[![npm version](https://badge.fury.io/js/@quramy%2Fjest-prisma.svg)](https://badge.fury.io/js/@quramy%2Fjest-prisma)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Quramy/jest-prisma/main/LICENSE.txt)
+
 Jest environment for Prisma integrated testing.
 You can run each test case in isolated transaction which is rolled back automatically.
 
