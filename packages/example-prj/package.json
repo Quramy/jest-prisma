@@ -10,8 +10,8 @@
   },
   "devDependencies": {
     "@quramy/jest-prisma": "*",
-    "@types/jest": "^28.1.2",
-    "jest": "^28.1.1",
+    "@types/jest": "28.1.3",
+    "jest": "28.1.2",
     "prisma": "4.0.0",
     "ts-jest": "^28.0.5"
   },
