@@ -47,7 +47,7 @@ export default class PrismaEnvironment extends NodeEnvironment {
   handleTestEvent(event: Circus.Event) {
     if (event.name === "test_start") {
       return this.beginTransaction();
-    } else if (event.name === "test_done") {
+    } else if (event.name === "test_done" || event.name === "test_skip") {
       return this.endTransaction();
     } else if (event.name === "test_fn_start") {
       logBuffer = [];
