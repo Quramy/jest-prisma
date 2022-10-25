@@ -40,7 +40,7 @@ export default {
 
 #### Configure Prisma
 
-jest-prisma uses [Prisma interactive transaction feature](https://www.prisma.io/docs/concepts/components/prisma-client/transactions#interactive-transactions-in-preview). Edit your schema.prisma and tern `interactiveTransactions` on.
+jest-prisma uses [Prisma interactive transaction feature](https://www.prisma.io/docs/concepts/components/prisma-client/transactions#interactive-transactions-in-preview). Edit your schema.prisma and turn `interactiveTransactions` on.
 
 ```gql
 generator client {
