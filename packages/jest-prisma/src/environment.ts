@@ -35,6 +35,7 @@ export default class PrismaEnvironment extends NodeEnvironment {
   }
 
   async setup() {
+    await _prisma.$connect();
     await super.setup();
     const jestPrisma: JestPrisma = {
       client: new Proxy<PrismaClient>({} as never, {
