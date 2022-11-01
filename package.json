@@ -4,7 +4,7 @@
   "scripts": {
     "prepare": "husky install",
     "build:lib": "tsc -b tsconfig.build.json",
-    "bootstrap": "npm run build:lib && npm run bootstrap --workspace examples/example-prj",
+    "bootstrap": "npm run bootstrap --workspace examples/example-prj && npm run build:lib",
     "migrate:test": "npm run migrate:test:ci --workspace packages/example-prj",
     "test:ci": "npm run test:ci --workspaces",
     "test": "npm run test --workspaces",
