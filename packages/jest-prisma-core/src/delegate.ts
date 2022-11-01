@@ -19,9 +19,9 @@ _prisma.$on("query", event => {
   logBuffer?.push(event);
 });
 
-type Ifff = Pick<JestEnvironment<unknown>, "handleTestEvent" | "teardown">;
+type PartialEnvironment = Pick<JestEnvironment<unknown>, "handleTestEvent" | "teardown">;
 
-export class PrismaEnvironmentDelegate implements Ifff {
+export class PrismaEnvironmentDelegate implements PartialEnvironment {
   private prismaClientProxy!: PrismaClient;
   private triggerTransactionEnd: () => void = () => null;
   private readonly options: JestPrismaEnvironmentOptions;
@@ -32,21 +32,18 @@ export class PrismaEnvironmentDelegate implements Ifff {
   }
 
   constructor(config: JestEnvironmentConfig, context: EnvironmentContext) {
-    // super(config, context);
     this.options = config.projectConfig.testEnvironmentOptions as JestPrismaEnvironmentOptions;
     this.testPath = context.testPath.replace(config.globalConfig.rootDir, "").slice(1);
   }
 
   async preSetup() {
     await _prisma.$connect();
-    // await super.setup();
     const jestPrisma: JestPrisma = {
       client: new Proxy<PrismaClient>({} as never, {
         get: (_, name: keyof PrismaClient) => this.prismaClientProxy[name],
       }),
       originalClient: _prisma,
     };
-    // this.global.jestPrisma = jestPrisma;
     return jestPrisma;
   }
 

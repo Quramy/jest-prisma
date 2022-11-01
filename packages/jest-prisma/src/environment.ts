@@ -20,7 +20,7 @@ export default class PrismaEnvironment extends Environment {
   }
 
   handleTestEvent(event: Circus.Event) {
-    this.delegate.handleTestEvent(event);
+    return this.delegate.handleTestEvent(event);
   }
 
   async teardown() {
