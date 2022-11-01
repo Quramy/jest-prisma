@@ -1,7 +1,7 @@
 import type { Circus } from "@jest/types";
 import type { JestEnvironmentConfig, EnvironmentContext } from "@jest/environment";
 
-import Environment from "jest-environment-jsdom";
+import Environment from "jest-environment-node";
 
 import { PrismaEnvironmentDelegate } from "@quramy/jest-prisma-core";
 

@@ -1,0 +1,8 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/jest-prisma-core" },
+    { "path": "packages/jest-prisma" },
+    { "path": "packages/jest-prisma-node" }
+  ]
+}

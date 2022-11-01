@@ -3,7 +3,8 @@
   "name": "@quramy/jest-prisma-workspaces",
   "scripts": {
     "prepare": "husky install",
-    "bootstrap": "npm run bootstrap --workspace packages/example-prj && npm run bootstrap --workspace packages/jest-prisma",
+    "build:lib": "tsc -b tsconfig.build.json",
+    "bootstrap": "npm run build:lib && npm run bootstrap --workspace examples/example-prj",
     "migrate:test": "npm run migrate:test:ci --workspace packages/example-prj",
     "test:ci": "npm run test:ci --workspaces",
     "test": "npm run test --workspaces",

@@ -5,6 +5,5 @@
     "outDir": "lib",
     "declaration": true
   },
-  "exclude": ["lib"],
-  "references": [{ "path": "../jest-prisma-core" }]
+  "exclude": ["lib"]
 }
