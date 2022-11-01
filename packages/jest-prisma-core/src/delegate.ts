@@ -9,40 +9,40 @@ import { PrismaClient, Prisma } from "@prisma/client";
 
 import type { JestPrisma, JestPrismaEnvironmentOptions } from "./types";
 
-let logBuffer: Prisma.QueryEvent[] | undefined = undefined;
-
-const _prisma = new PrismaClient({
-  log: [{ level: "query", emit: "event" }],
-});
-
-_prisma.$on("query", event => {
-  logBuffer?.push(event);
-});
-
 type PartialEnvironment = Pick<JestEnvironment<unknown>, "handleTestEvent" | "teardown">;
 
 export class PrismaEnvironmentDelegate implements PartialEnvironment {
   private prismaClientProxy!: PrismaClient;
+  private originalClient: PrismaClient;
   private triggerTransactionEnd: () => void = () => null;
   private readonly options: JestPrismaEnvironmentOptions;
   private readonly testPath: string;
+  private logBuffer: Prisma.QueryEvent[] | undefined = undefined;
 
   getClient() {
     return this.prismaClientProxy;
   }
 
   constructor(config: JestEnvironmentConfig, context: EnvironmentContext) {
+    const originalClient = new PrismaClient({
+      log: [{ level: "query", emit: "event" }],
+    });
+    originalClient.$on("query", event => {
+      this.logBuffer?.push(event);
+    });
+    this.originalClient = originalClient;
+
     this.options = config.projectConfig.testEnvironmentOptions as JestPrismaEnvironmentOptions;
     this.testPath = context.testPath.replace(config.globalConfig.rootDir, "").slice(1);
   }
 
   async preSetup() {
-    await _prisma.$connect();
+    await this.originalClient.$connect();
     const jestPrisma: JestPrisma = {
       client: new Proxy<PrismaClient>({} as never, {
         get: (_, name: keyof PrismaClient) => this.prismaClientProxy[name],
       }),
-      originalClient: _prisma,
+      originalClient: this.originalClient,
     };
     return jestPrisma;
   }
@@ -53,22 +53,22 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
     } else if (event.name === "test_done" || event.name === "test_skip") {
       return this.endTransaction();
     } else if (event.name === "test_fn_start") {
-      logBuffer = [];
+      this.logBuffer = [];
     } else if (event.name === "test_fn_success" || event.name === "test_fn_failure") {
       this.dumpQueryLog(event.test);
-      logBuffer = undefined;
+      this.logBuffer = undefined;
     }
   }
 
   async teardown() {
-    await _prisma.$disconnect();
+    await this.originalClient.$disconnect();
   }
 
   private async beginTransaction() {
     return new Promise<void>(resolve =>
-      _prisma
+      this.originalClient
         .$transaction(transactionClient => {
-          this.prismaClientProxy = createProxy(transactionClient);
+          this.prismaClientProxy = createProxy(transactionClient, this.originalClient);
           resolve();
           return new Promise(
             (resolve, reject) => (this.triggerTransactionEnd = this.options.disableRollback ? resolve : reject),
@@ -83,7 +83,7 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
   }
 
   private dumpQueryLog(test: Circus.TestEntry) {
-    if (this.options.verboseQuery && logBuffer) {
+    if (this.options.verboseQuery && this.logBuffer) {
       let parentBlock: Circus.DescribeBlock | undefined | null = test.parent;
       const nameFragments: string[] = [test.name];
       while (!!parentBlock) {
@@ -92,7 +92,7 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
       }
       const breadcrumb = [this.testPath, ...nameFragments.reverse().slice(1)].join(" > ");
       console.log(chalk.blue.bold.inverse(" QUERY ") + " " + chalk.gray(breadcrumb));
-      for (const event of logBuffer) {
+      for (const event of this.logBuffer) {
         console.log(`${chalk.blue("  jest-prisma:query")} ${event.query}`);
       }
     }
@@ -117,7 +117,7 @@ function fakeInnerTransactionFactory(parentTxClient: Prisma.TransactionClient) {
   return fakeTransactionMethod;
 }
 
-function createProxy(txClient: Prisma.TransactionClient) {
+function createProxy(txClient: Prisma.TransactionClient, originalClient: any) {
   const boundFakeTransactionMethod = fakeInnerTransactionFactory(txClient);
   return new Proxy(txClient, {
     get: (target, name) => {
@@ -126,7 +126,7 @@ function createProxy(txClient: Prisma.TransactionClient) {
       if (name === "$transaction") {
         return boundFakeTransactionMethod;
       }
-      if (_prisma[name as keyof PrismaClient]) {
+      if (originalClient[name as keyof PrismaClient]) {
         throw new Error(`Unsupported property: ${name.toString()}`);
       }
     },
