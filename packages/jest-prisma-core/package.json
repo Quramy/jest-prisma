@@ -1,18 +1,14 @@
 {
-  "name": "@quramy/jest-prisma",
+  "name": "@quramy/jest-prisma-core",
   "version": "1.0.4",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "exports": {
     ".": {
       "default": "./lib/index.js"
-    },
-    "./environment": {
-      "default": "./environment.js"
     }
   },
   "files": [
-    "environment.js",
     "lib/**/*"
   ],
   "homepage": "https://github.com/Quramy/jest-prisma",
@@ -21,17 +17,17 @@
     "url": "https://github.com/Quramy/jest-prisma.git"
   },
   "dependencies": {
-    "@quramy/jest-prisma-core": "^1.0.0"
+    "chalk": "^4.0.0"
   },
   "peerDependencies": {
     "@prisma/client": "^2.29.0 || ^3.0.0 || ^4.0.0",
-    "jest": "^28.0.0 || ^29.0.0",
-    "jest-environment-jsdom": "^28.0.0 || ^29.0.0"
+    "jest": "^28.0.0 || ^29.0.0"
   },
   "scripts": {
+    "bootstrap": "tsc",
+    "prepublish": "exit 0",
     "test:ci": "echo \"test\"",
-    "test": "echo \"test\"",
-    "prepack": "cp ../../README.md ./"
+    "test": "echo \"test\""
   },
   "keywords": [
     "jest",

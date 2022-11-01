@@ -1,5 +1,5 @@
 {
-  "name": "@quramy/jest-prisma",
+  "name": "@quramy/jest-prisma-node",
   "version": "1.0.4",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -26,12 +26,13 @@
   "peerDependencies": {
     "@prisma/client": "^2.29.0 || ^3.0.0 || ^4.0.0",
     "jest": "^28.0.0 || ^29.0.0",
-    "jest-environment-jsdom": "^28.0.0 || ^29.0.0"
+    "jest-environment-node": "^28.0.0 || ^29.0.0"
   },
   "scripts": {
+    "bootstrap": "tsc",
     "test:ci": "echo \"test\"",
     "test": "echo \"test\"",
-    "prepack": "cp ../../README.md ./"
+    "prepublish": "cp ../../README.md ./"
   },
   "keywords": [
     "jest",

@@ -26,9 +26,7 @@ jobs:
           npm whoami
           npm ci
           npm run bootstrap
-          cd packages/jest-prisma
-          npm run prepublish 
-          npm publish
+          npm publish --workspace="packages/**"
         if: contains(github.ref, 'tags/v')
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}

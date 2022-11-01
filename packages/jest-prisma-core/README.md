@@ -1,9 +1,15 @@
+# @quramy/jest-prisma-core
+
+Utility class to build Jest environment for Prisma.
+
+## Usage
+
+```ts
 import type { Circus } from "@jest/types";
 import type { JestEnvironmentConfig, EnvironmentContext } from "@jest/environment";
-
-import Environment from "jest-environment-jsdom";
-
 import { PrismaEnvironmentDelegate } from "@quramy/jest-prisma-core";
+
+import Environment from "your-jest-environment";
 
 export default class PrismaEnvironment extends Environment {
   private readonly delegate: PrismaEnvironmentDelegate;
@@ -27,3 +33,8 @@ export default class PrismaEnvironment extends Environment {
     await Promise.all([super.teardown(), this.delegate.teardown()]);
   }
 }
+```
+
+## LICENSE
+
+MIT
