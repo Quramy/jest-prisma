@@ -11,6 +11,8 @@ import type { JestPrisma, JestPrismaEnvironmentOptions } from "./types";
 
 type PartialEnvironment = Pick<JestEnvironment<unknown>, "handleTestEvent" | "teardown">;
 
+const DEFAULT_MAX_WAIT = 5_000;
+
 export class PrismaEnvironmentDelegate implements PartialEnvironment {
   private prismaClientProxy!: PrismaClient;
   private originalClient: PrismaClient;
@@ -67,13 +69,18 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
   private async beginTransaction() {
     return new Promise<void>(resolve =>
       this.originalClient
-        .$transaction(transactionClient => {
-          this.prismaClientProxy = createProxy(transactionClient, this.originalClient);
-          resolve();
-          return new Promise(
-            (resolve, reject) => (this.triggerTransactionEnd = this.options.disableRollback ? resolve : reject),
-          );
-        })
+        .$transaction(
+          transactionClient => {
+            this.prismaClientProxy = createProxy(transactionClient, this.originalClient);
+            resolve();
+            return new Promise(
+              (resolve, reject) => (this.triggerTransactionEnd = this.options.disableRollback ? resolve : reject),
+            );
+          },
+          {
+            maxWait: this.options.maxWait ?? DEFAULT_MAX_WAIT,
+          },
+        )
         .catch(() => true),
     );
   }

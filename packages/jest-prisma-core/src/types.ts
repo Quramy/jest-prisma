@@ -26,4 +26,13 @@ export interface JestPrismaEnvironmentOptions {
    *
    */
   readonly verboseQuery?: boolean;
+
+  /**
+   *
+   * The maximum amount of time the Prisma Client will wait to acquire a transaction from the database.
+   *
+   * The default value is 5 seconds.
+   *
+   */
+  readonly maxWait?: number;
 }
