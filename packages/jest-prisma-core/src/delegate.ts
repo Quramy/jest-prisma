@@ -25,7 +25,7 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
     return this.prismaClientProxy;
   }
 
-  constructor(config: JestEnvironmentConfig & JestPrismaEnvironmentOptions, context: EnvironmentContext) {
+  constructor(config: JestEnvironmentConfig, context: EnvironmentContext) {
     const originalClient = new PrismaClient({
       log: [{ level: "query", emit: "event" }],
     });
@@ -34,7 +34,7 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
     });
     this.originalClient = originalClient;
 
-    this.options = config.projectConfig.testEnvironmentOptions;
+    this.options = config.projectConfig.testEnvironmentOptions as JestPrismaEnvironmentOptions;
     this.testPath = context.testPath.replace(config.globalConfig.rootDir, "").slice(1);
   }
 
