@@ -40,6 +40,10 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
 
   async preSetup() {
     await this.originalClient.$connect();
+    const hasInteractiveTransaction = await this.checkInteractiveTransaction();
+    if (!hasInteractiveTransaction) {
+      throw new Error(`jest-prisma needs "interactiveTransactions" preview feature.`);
+    }
     const jestPrisma: JestPrisma = {
       client: new Proxy<PrismaClient>({} as never, {
         get: (_, name: keyof PrismaClient) => this.prismaClientProxy[name],
@@ -64,6 +68,16 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
 
   async teardown() {
     await this.originalClient.$disconnect();
+  }
+
+  private async checkInteractiveTransaction() {
+    const checker: any = () => Promise.resolve(null);
+    try {
+      await this.originalClient.$transaction(checker);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   private async beginTransaction() {
