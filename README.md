@@ -175,6 +175,82 @@ describe("findUserById", () => {
 });
 ```
 
+### DI Containers
+
+If you're using DI containers such as [InversifyJS](https://github.com/inversify/InversifyJS) or [Awilix](https://github.com/jeffijoe/awilix) and wish to introduce jest-prisma, you can easily do that just by rebinding PrismaClient to a global `jestPrisma` instance provided by jest-prisma.
+
+Here is an example below. Given that we have the following repository. Note that it is decorated by `@injectable` so will `prisma` will be inject as a constructor argument.
+
+```ts
+/* types.ts */
+export const TYPES = {
+  PrismaClient: Symbol.for("PrismaClient"),
+  UserRepository: Symbol.for("UserRepository"),
+};
+```
+
+```ts
+/* user-repository.ts */
+import { TYPES } from "./types";
+
+interface IUserRepository {
+  findAll(): Promise<User[]>;
+  findById(): Promise<User[]>;
+  save(): Promise<User[]>;
+}
+
+@injectable()
+class UserRepositoryPrisma implements IUserRepository {
+  constructor(
+    @inject(TYPES.PrismaClient)
+    private readonly prisma: PrismaClient,
+  ) {}
+
+  async findAll() { .. }
+
+  async findById() { .. }
+
+  async save() { .. }
+}
+```
+
+```ts
+/* inversify.config.ts */
+import { Container } from "inversify";
+import { PrismaClient } from "prisma";
+
+import { TYPES } from "./types";
+import { UserRepositoryPrisma, IUserRepository } from "./user-repository";
+
+const container = new Container();
+
+container.bind(TYPES.PrismaClient).toConstantValue(new PrismaClient());
+
+container.bind<IUserRepository>(TYPES.UserRepository).to(UserRepositoryPrisma);
+```
+
+In most cases, the setup above allows you to inject a pre-configured `PrismaClient` by associating the symbol to an actual instance like `bind(TYPES.PrismaClient).toConstantValue(new PrismaClient())` and then acquire the repository by `get(TYPES.UserRepository)`.
+
+However, with jest-prisma, the global `jestPrisma.client` object is initialised for each unit tests so you have to make sure that you're binding the instance _after_ the initialisation.
+
+Note that we're rebinding PrismaClient to the jest-prisma inside `beforeEach` phase. Any other phase including `beforeAll` or `setupFilesAfterEnv` may not work as you expect.
+
+```ts
+/* user-repository.spec.ts */
+describe("UserRepository", () => {
+  beforeEach(() => {
+    container
+      .rebind(TYPES.PrismaClient)
+      .toConstantValue(jestPrisma.client);
+  });
+
+  it("creates a user" ,() => {
+    constainer.get<IUserRepository>(TYPES.UserRepository);
+    ...
+  });
+});
+```
+
 ## References
 
 ### `global.jestPrisma`
