@@ -284,6 +284,15 @@ export interface JestPrismaEnvironmentOptions {
    *
    */
   readonly verboseQuery?: boolean;
+
+  /**
+   *
+   * Override the database connection URL.
+   *
+   * Useful if you have a separate database for testing.
+   *
+   */
+  readonly databaseUrl?: string;
 }
 ```
 

@@ -26,15 +26,23 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
   }
 
   constructor(config: JestEnvironmentConfig, context: EnvironmentContext) {
+    this.options = config.projectConfig.testEnvironmentOptions as JestPrismaEnvironmentOptions;
+
     const originalClient = new PrismaClient({
       log: [{ level: "query", emit: "event" }],
+      ...(this.options.databaseUrl && {
+        datasources: {
+          db: {
+            url: this.options.databaseUrl,
+          },
+        },
+      }),
     });
     originalClient.$on("query", event => {
       this.logBuffer?.push(event);
     });
     this.originalClient = originalClient;
 
-    this.options = config.projectConfig.testEnvironmentOptions as JestPrismaEnvironmentOptions;
     this.testPath = context.testPath.replace(config.globalConfig.rootDir, "").slice(1);
   }
 
