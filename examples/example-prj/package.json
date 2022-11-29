@@ -11,13 +11,13 @@
   },
   "devDependencies": {
     "@quramy/jest-prisma": "*",
+    "@prisma/client": "*",
     "@types/jest": "29.2.1",
+    "prisma": "*",
     "jest": "29.2.2",
-    "prisma": "4.5.0",
     "ts-jest": "29.0.3"
   },
   "dependencies": {
-    "@prisma/client": "4.5.0",
     "@types/uuid": "8.3.4",
     "sqlite": "4.1.2",
     "uuid": "9.0.0"
