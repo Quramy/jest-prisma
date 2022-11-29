@@ -40,14 +40,7 @@ export default {
 
 #### Configure Prisma
 
-jest-prisma uses [Prisma interactive transaction feature](https://www.prisma.io/docs/concepts/components/prisma-client/transactions#interactive-transactions-in-preview). Edit your schema.prisma and turn `interactiveTransactions` on.
-
-```gql
-generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["interactiveTransactions"]
-}
-```
+jest-prisma uses [Prisma interactive transaction feature](https://www.prisma.io/docs/guides/performance-and-optimization/prisma-client-transactions-guide#interactive-transactions). Interactive transaction needs to be listed in `previewFeatures` if you use `@prisma/client` < 4.7 .
 
 #### Write tests
 
