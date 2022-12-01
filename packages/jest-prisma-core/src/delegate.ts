@@ -1,34 +1,58 @@
 import type { Circus } from "@jest/types";
-import type { JestEnvironmentConfig, EnvironmentContext } from "@jest/environment";
 
 import chalk from "chalk";
 
 import type { JestEnvironment } from "@jest/environment";
 
-import { PrismaClient, Prisma } from "@prisma/client";
+import { getPrismaClient } from "@prisma/client/runtime";
+import { PrismaClient as PrismaClientKlass } from "@prisma/client";
 
-import type { JestPrisma, JestPrismaEnvironmentOptions } from "./types";
+import type {
+  JestPrisma,
+  JestPrismaEnvironmentOptions,
+  JestPrismaEnvironmentConfig,
+  JestPrismaEnvironmentContext,
+  PreSetupOptions,
+} from "./types";
+import { loadDefaultClient } from "./loadDefaultClient";
 
 type PartialEnvironment = Pick<JestEnvironment<unknown>, "handleTestEvent" | "teardown">;
 
+type PrismaClient = ReturnType<typeof getPrismaClient> extends new () => infer T ? T : never;
+type TransactionClient = PrismaClient;
+type QueryEvent = {
+  readonly query: string;
+};
+
 const DEFAULT_MAX_WAIT = 5_000;
+
+function isPrismaClient(x: unknown): x is PrismaClient {
+  if (typeof x !== "object" || x == null) return false;
+  if (!("$transaction" in x) || typeof x["$transaction"] !== "function") return false;
+  if (!("$connect" in x) || typeof x["$connect"] !== "function") return false;
+  if (!("$disconnect" in x) || typeof x["$disconnect"] !== "function") return false;
+  return true;
+}
 
 export class PrismaEnvironmentDelegate implements PartialEnvironment {
   private prismaClientProxy!: PrismaClient;
-  private originalClient: PrismaClient;
+  private originalClient!: PrismaClient;
   private triggerTransactionEnd: () => void = () => null;
   private readonly options: JestPrismaEnvironmentOptions;
   private readonly testPath: string;
-  private logBuffer: Prisma.QueryEvent[] | undefined = undefined;
+  private logBuffer: QueryEvent[] | undefined = undefined;
 
-  getClient() {
-    return this.prismaClientProxy;
+  constructor(config: JestPrismaEnvironmentConfig, context: JestPrismaEnvironmentContext) {
+    this.options = config.projectConfig.testEnvironmentOptions as JestPrismaEnvironmentOptions;
+    if (config.globalConfig?.rootDir && context.testPath) {
+      this.testPath = context.testPath.replace(config.globalConfig.rootDir, "").slice(1);
+    } else {
+      this.testPath = "";
+    }
   }
 
-  constructor(config: JestEnvironmentConfig, context: EnvironmentContext) {
-    this.options = config.projectConfig.testEnvironmentOptions as JestPrismaEnvironmentOptions;
-
-    const originalClient = new PrismaClient({
+  async preSetup({ experimentalCustomClient }: PreSetupOptions = {}) {
+    const originalClient = new PrismaClientKlass({
       log: [{ level: "query", emit: "event" }],
       ...(this.options.databaseUrl && {
         datasources: {
@@ -37,16 +61,23 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
           },
         },
       }),
-    });
-    originalClient.$on("query", event => {
+    }) as unknown as PrismaClient;
+    if (experimentalCustomClient) {
+      const unknownClient: unknown = experimentalCustomClient;
+      if (!isPrismaClient(unknownClient)) {
+        throw new Error("custmClient is not Prisma client");
+      }
+      this.originalClient = unknownClient;
+    } else {
+      this.originalClient = (await loadDefaultClient(this.options)) as PrismaClient;
+    }
+
+    this.originalClient.$on("query", (event: QueryEvent) => {
       this.logBuffer?.push(event);
     });
+
     this.originalClient = originalClient;
 
-    this.testPath = context.testPath.replace(config.globalConfig.rootDir, "").slice(1);
-  }
-
-  async preSetup() {
     await this.originalClient.$connect();
     const hasInteractiveTransaction = await this.checkInteractiveTransaction();
     if (!hasInteractiveTransaction) {
@@ -55,8 +86,8 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
     const jestPrisma: JestPrisma = {
       client: new Proxy<PrismaClient>({} as never, {
         get: (_, name: keyof PrismaClient) => this.prismaClientProxy[name],
-      }),
-      originalClient: this.originalClient,
+      }) as any,
+      originalClient: this.originalClient as any,
     };
     return jestPrisma;
   }
@@ -92,7 +123,7 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
     return new Promise<void>(resolve =>
       this.originalClient
         .$transaction(
-          transactionClient => {
+          (transactionClient: TransactionClient) => {
             this.prismaClientProxy = createProxy(transactionClient, this.originalClient);
             resolve();
             return new Promise(
@@ -128,9 +159,9 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
   }
 }
 
-function fakeInnerTransactionFactory(parentTxClient: Prisma.TransactionClient) {
+function fakeInnerTransactionFactory(parentTxClient: TransactionClient) {
   const fakeTransactionMethod = async (
-    arg: PromiseLike<unknown>[] | ((client: Prisma.TransactionClient) => Promise<unknown>),
+    arg: PromiseLike<unknown>[] | ((client: TransactionClient) => Promise<unknown>),
   ) => {
     if (Array.isArray(arg)) {
       const results = [] as unknown[];
@@ -146,11 +177,11 @@ function fakeInnerTransactionFactory(parentTxClient: Prisma.TransactionClient) {
   return fakeTransactionMethod;
 }
 
-function createProxy(txClient: Prisma.TransactionClient, originalClient: any) {
+function createProxy(txClient: TransactionClient, originalClient: any) {
   const boundFakeTransactionMethod = fakeInnerTransactionFactory(txClient);
   return new Proxy(txClient, {
     get: (target, name) => {
-      const delegate = target[name as keyof Prisma.TransactionClient];
+      const delegate = target[name as keyof TransactionClient];
       if (delegate) return delegate;
       if (name === "$transaction") {
         return boundFakeTransactionMethod;

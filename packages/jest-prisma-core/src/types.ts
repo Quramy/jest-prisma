@@ -1,5 +1,18 @@
 import type { PrismaClient } from "@prisma/client";
 
+export type JestPrismaEnvironmentConfig = {
+  globalConfig?: {
+    rootDir?: string;
+  };
+  projectConfig: {
+    testEnvironmentOptions: JestPrismaEnvironmentOptions;
+  };
+};
+
+export type JestPrismaEnvironmentContext = {
+  testPath?: string;
+};
+
 export interface JestPrisma {
   /**
    *
@@ -44,4 +57,14 @@ export interface JestPrismaEnvironmentOptions {
    *
    */
   readonly databaseUrl?: string;
+}
+
+interface PrismaClientLike {
+  $connect: () => PromiseLike<unknown>;
+  $disconnect: () => PromiseLike<unknown>;
+  $transaction: (...args: any[]) => PromiseLike<unknown>;
+}
+
+export interface PreSetupOptions {
+  experimentalCustomClient?: PrismaClientLike;
 }
