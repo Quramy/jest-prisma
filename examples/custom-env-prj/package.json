@@ -1,0 +1,25 @@
+{
+  "private": true,
+  "name": "custom-env-prj",
+  "version": "1.2.0",
+  "scripts": {
+    "bootstrap": "npm run generate",
+    "migrate:test:ci": "DATABASE_URL=\"file:./test.db\" prisma migrate dev",
+    "generate": "prisma generate",
+    "test": "jest",
+    "test:ci": "DATABASE_URL=\"file:./test.db\" jest"
+  },
+  "devDependencies": {
+    "@quramy/jest-prisma": "*",
+    "@prisma/client": "*",
+    "@types/jest": "29.2.1",
+    "prisma": "*",
+    "jest": "29.2.2",
+    "ts-jest": "29.0.3"
+  },
+  "dependencies": {
+    "@types/uuid": "8.3.4",
+    "sqlite": "4.1.2",
+    "uuid": "9.0.0"
+  }
+}
