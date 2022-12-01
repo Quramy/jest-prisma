@@ -1,2 +1,2 @@
-export * from "./delegate";
-export * from "./types";
+export * from "./delegate.js";
+export * from "./types.js";

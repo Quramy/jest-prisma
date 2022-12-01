@@ -1,13 +1,14 @@
 {
   "private": true,
-  "name": "example-prj",
+  "name": "example-prj-esm",
+  "type": "module",
   "version": "1.2.0",
   "scripts": {
     "bootstrap": "npm run generate",
     "migrate:test:ci": "DATABASE_URL=\"file:./test.db\" prisma migrate dev",
     "generate": "prisma generate",
-    "test": "jest",
-    "test:ci": "DATABASE_URL=\"file:./test.db\" jest"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:ci": "DATABASE_URL=\"file:./test.db\" NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "devDependencies": {
     "@quramy/jest-prisma": "*",

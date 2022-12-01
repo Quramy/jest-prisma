@@ -3,16 +3,24 @@
   "version": "1.2.0",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "engines": {
+    "node": ">=14.13"
+  },
   "exports": {
     ".": {
+      "import": "./index.mjs",
+      "types": "./lib/index.d.ts",
+      "require": "./lib/index.js",
       "default": "./lib/index.js"
     },
     "./environment": {
-      "default": "./environment.js"
+      "import": "./environment.mjs",
+      "require": "./lib/environment.js",
+      "default": "./lib/environment.js"
     }
   },
   "files": [
-    "environment.js",
+    "*.mjs",
     "lib/**/*"
   ],
   "homepage": "https://github.com/Quramy/jest-prisma",
