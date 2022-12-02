@@ -7,7 +7,7 @@ import type { JestEnvironment } from "@jest/environment";
 
 import { PrismaClient, Prisma } from "@prisma/client";
 
-import type { JestPrisma, JestPrismaEnvironmentOptions } from "./types";
+import type { JestPrisma, JestPrismaEnvironmentOptions } from "./types.js";
 
 type PartialEnvironment = Pick<JestEnvironment<unknown>, "handleTestEvent" | "teardown">;
 
