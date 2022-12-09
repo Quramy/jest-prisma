@@ -14,7 +14,7 @@ type PartialEnvironment = Pick<JestEnvironment<unknown>, "handleTestEvent" | "te
 const DEFAULT_MAX_WAIT = 5_000;
 
 export class PrismaEnvironmentDelegate implements PartialEnvironment {
-  private prismaClientProxy!: PrismaClient;
+  private prismaClientProxy: PrismaClient | undefined;
   private originalClient: PrismaClient;
   private triggerTransactionEnd: () => void = () => null;
   private readonly options: JestPrismaEnvironmentOptions;
@@ -54,7 +54,18 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
     }
     const jestPrisma: JestPrisma = {
       client: new Proxy<PrismaClient>({} as never, {
-        get: (_, name: keyof PrismaClient) => this.prismaClientProxy[name],
+        get: (_, name: keyof PrismaClient) => {
+          if (!this.prismaClientProxy) {
+            console.warn(
+              "jsetPrisma.client should be used in test or beforeEach functions because transaction has not yet started.",
+            );
+            console.warn(
+              "If you want to access Prisma client in beforeAll or afterAll, use jestPrisma.originalClient.",
+            );
+          } else {
+            return this.prismaClientProxy[name];
+          }
+        },
       }),
       originalClient: this.originalClient,
     };
