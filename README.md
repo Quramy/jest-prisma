@@ -74,6 +74,31 @@ describe(UserService, () => {
 });
 ```
 
+If you test using Date object, be careful that jest environment `Date` class is outof sandbox, therefore there is possibility sometimes it can't parse appropriately nested Date instance args passed from each test cases. For this, you need Date class provided from jestPrisma.
+
+```ts
+test("include api should work using date type condition", async () => {
+  const user = await prisma.user.findFirst({
+    where: {
+      createdAt: {
+        lt: new jestPrisma.Date(),
+        gte: new jestPrisma.Date(new jestPrisma.Date().getTime() - 1000 * 60 * 60 * 24),
+      },
+    },
+    include: {
+      posts: {
+        where: {
+          createdAt: {
+            lt: new jestPrisma.Date(),
+            gte: new jestPrisma.Date(new jestPrisma.Date().getTime() - 1000 * 60 * 60 * 24),
+          },
+        },
+      },
+    },
+  });
+});
+```
+
 ## Configuration
 
 You can pass some options using `testEnvironmentOptions`.
