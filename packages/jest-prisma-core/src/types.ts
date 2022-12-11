@@ -10,6 +10,8 @@ export interface JestPrisma {
   readonly client: PrismaClient;
 
   readonly originalClient: PrismaClient;
+
+  readonly Date: typeof Date;
 }
 
 export interface JestPrismaEnvironmentOptions {

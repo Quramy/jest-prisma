@@ -3,15 +3,9 @@
  * @jest-environment-options { "verboseQuery": true }
  *
  */
-import { PrismaClient } from "@prisma/client";
 
 describe("Should include date type work arround", () => {
-  /* NG */
   const prisma = jestPrisma.client;
-  /* NG */
-  //  const prisma = jestPrisma.originalClient;
-  /* OK */
-  // const prisma = new PrismaClient();
 
   beforeEach(async () => {
     await prisma.post.create({
@@ -32,16 +26,16 @@ describe("Should include date type work arround", () => {
     const user = await prisma.user.findFirst({
       where: {
         createdAt: {
-          lt: new Date(),
-          gte: new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
+          lt: new jestPrisma.Date(),
+          gte: new jestPrisma.Date(new jestPrisma.Date().getTime() - 1000 * 60 * 60 * 24),
         },
       },
       include: {
         posts: {
           where: {
             createdAt: {
-              lt: new Date(),
-              gte: new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
+              lt: new jestPrisma.Date(),
+              gte: new jestPrisma.Date(new jestPrisma.Date().getTime() - 1000 * 60 * 60 * 24),
             },
           },
         },
@@ -53,8 +47,8 @@ describe("Should include date type work arround", () => {
         where: {
           author: {
             createdAt: {
-              lt: new Date(),
-              gte: new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
+              lt: new jestPrisma.Date(),
+              gte: new jestPrisma.Date(new jestPrisma.Date().getTime() - 1000 * 60 * 60 * 24),
             },
           },
         },
@@ -64,8 +58,8 @@ describe("Should include date type work arround", () => {
               posts: {
                 where: {
                   createdAt: {
-                    lt: new Date(),
-                    gte: new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
+                    lt: new jestPrisma.Date(),
+                    gte: new jestPrisma.Date(new jestPrisma.Date().getTime() - 1000 * 60 * 60 * 24),
                   },
                 },
               },
