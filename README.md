@@ -244,6 +244,62 @@ describe("UserRepository", () => {
 });
 ```
 
+### Workaround for DateTime invocation error
+
+If you encounter errors like the following:
+
+```
+Argument gte: Got invalid value {} on prisma.findFirstUser. Provided Json, expected DateTime.
+```
+
+It's because that Jest global `Date` is differ from JavaScript original `Date`(https://github.com/facebook/jest/issues/2549).
+
+And this error can be work around by using [single context environment](https://www.npmjs.com/package/jest-environment-node-single-context):
+
+```ts
+/* myEnv.ts */
+import type { Circus } from "@jest/types";
+import type { JestEnvironmentConfig, EnvironmentContext } from "@jest/environment";
+
+import { PrismaEnvironmentDelegate } from "@quramy/jest-prisma-core";
+import Environment from "jest-environment-node-single-context";
+
+export default class PrismaEnvironment extends Environment {
+  private readonly delegate: PrismaEnvironmentDelegate;
+
+  constructor(config: JestEnvironmentConfig, context: EnvironmentContext) {
+    super(config, context);
+    this.delegate = new PrismaEnvironmentDelegate(config, context);
+  }
+
+  async setup() {
+    const jestPrisma = await this.delegate.preSetup();
+    await super.setup();
+    this.global.jestPrisma = jestPrisma;
+  }
+
+  handleTestEvent(event: Circus.Event) {
+    return this.delegate.handleTestEvent(event);
+  }
+
+  async teardown() {
+    await Promise.all([super.teardown(), this.delegate.teardown()]);
+  }
+}
+```
+
+```js
+/* jest.config.mjs */
+
+export default {
+  testEnvironment: "myEnv.ts",
+};
+```
+
+Caveat: This work around might me affect your test cases using Jest fake timer features.
+
+See also https://github.com/Quramy/jest-prisma/issues/56.
+
 ## References
 
 ### `global.jestPrisma`
