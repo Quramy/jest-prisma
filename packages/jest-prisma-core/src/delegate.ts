@@ -12,6 +12,7 @@ import type { JestPrisma, JestPrismaEnvironmentOptions } from "./types.js";
 type PartialEnvironment = Pick<JestEnvironment<unknown>, "handleTestEvent" | "teardown">;
 
 const DEFAULT_MAX_WAIT = 5_000;
+const DEFAULT_TIMEOUT = 5_000;
 
 export class PrismaEnvironmentDelegate implements PartialEnvironment {
   private prismaClientProxy: PrismaClient | undefined;
@@ -112,6 +113,7 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
           },
           {
             maxWait: this.options.maxWait ?? DEFAULT_MAX_WAIT,
+            timeout: this.options.timeout ?? DEFAULT_TIMEOUT,
           },
         )
         .catch(() => true),
