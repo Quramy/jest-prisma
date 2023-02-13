@@ -53,4 +53,12 @@ export interface JestPrismaEnvironmentOptions {
    *
    */
   readonly databaseUrl?: string;
+
+  /**
+   *
+   * Prisma client path. Useful for monorepos or when using a custom path for the generated prisma client.
+   *
+   * @default @prisma/client
+   */
+  readonly prismaPath?: string;
 }

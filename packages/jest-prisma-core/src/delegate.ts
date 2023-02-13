@@ -5,7 +5,7 @@ import chalk from "chalk";
 
 import type { JestEnvironment } from "@jest/environment";
 
-import { PrismaClient, Prisma } from "@prisma/client";
+import type { PrismaClient, Prisma } from "@prisma/client";
 
 import type { JestPrisma, JestPrismaEnvironmentOptions } from "./types.js";
 
@@ -29,7 +29,9 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
   constructor(config: JestEnvironmentConfig, context: EnvironmentContext) {
     this.options = config.projectConfig.testEnvironmentOptions as JestPrismaEnvironmentOptions;
 
-    const originalClient = new PrismaClient({
+    const Client = require(this.options.prismaPath || "@prisma/client").PrismaClient as PrismaClient;
+
+    const originalClient = new Client({
       log: [{ level: "query", emit: "event" }],
       ...(this.options.databaseUrl && {
         datasources: {
