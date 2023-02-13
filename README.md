@@ -389,7 +389,7 @@ export interface JestPrismaEnvironmentOptions {
    *
    * @default @prisma/client
    */
-  readonly prismaOutput?: string;
+  readonly prismaPath?: string;
 }
 ```
 
