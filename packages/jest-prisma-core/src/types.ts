@@ -38,6 +38,15 @@ export interface JestPrismaEnvironmentOptions {
 
   /**
    *
+   * The maximum amount of time the interactive transaction can run before being canceled and rolled back.
+   *
+   * The default value is 5 seconds.
+   *
+   */
+  readonly timeout?: number;
+
+  /**
+   *
    * Override the database connection URL.
    *
    * Default is the url set in the `DATABASE_URL` environment variable.
