@@ -300,6 +300,28 @@ Caveat: This work around might me affect your test cases using Jest fake timer f
 
 See also https://github.com/Quramy/jest-prisma/issues/56.
 
+### Custom prisma client output
+
+You can change the PrismaClient class used in `global.jestPrisma` by changing the `prismaPath` option and adding a `moduleNameMapper` to your jest config` file.
+
+```js
+// jest.config.js
+const prismaPath = require.resolve(".prisma/client");
+
+module.exports = {
+  moduleNameMapper: {
+    // Tests files are run within out environment, so we need to
+    // also map the path to the correct prisma client
+    "^.prisma/client/index$": prismaPath,
+  },
+  testEnvironmentOptions: {
+    prismaPath,
+  },
+};
+```
+
+This will allow you to use your own PrismaClient class.
+
 ## References
 
 ### `global.jestPrisma`
@@ -360,6 +382,14 @@ export interface JestPrismaEnvironmentOptions {
    *
    */
   readonly databaseUrl?: string;
+
+  /**
+   *
+   * Prisma client path. Useful for monorepos or when using a custom path for the generated prisma client.
+   *
+   * @default @prisma/client
+   */
+  readonly prismaPath?: string;
 }
 ```
 
