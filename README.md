@@ -300,13 +300,13 @@ Caveat: This work around might me affect your test cases using Jest fake timer f
 
 See also https://github.com/Quramy/jest-prisma/issues/56.
 
-### Custom prisma client output
+### Working with a custom prisma output
 
 You can change the PrismaClient class used in `global.jestPrisma` by changing the `prismaPath` option and adding a `moduleNameMapper` to your jest config` file.
 
 ```js
 // jest.config.js
-const prismaPath = require.resolve(".prisma/client");
+const prismaPath = require.resolve("my-prisma-folder");
 
 module.exports = {
   moduleNameMapper: {
@@ -389,7 +389,7 @@ export interface JestPrismaEnvironmentOptions {
    *
    * @default @prisma/client
    */
-  readonly prismaPath?: string;
+  readonly prismaOutput?: string;
 }
 ```
 
