@@ -153,7 +153,16 @@ function fakeInnerTransactionFactory(parentTxClient: Prisma.TransactionClient) {
       }
       return results;
     } else {
-      return await arg(parentTxClient);
+      const now = Date.now();
+      await parentTxClient.$executeRaw`SAVEPOINT ${now};`;
+      try {
+        const result = await arg(parentTxClient);
+        await parentTxClient.$executeRaw`RELEASE SAVEPOINT ${now};`;
+        return result;
+      } catch (err) {
+        await parentTxClient.$executeRaw`ROLLBACK TO SAVEPOINT ${now};`;
+        throw err;
+      }
     }
   };
   return fakeTransactionMethod;
