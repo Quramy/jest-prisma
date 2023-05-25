@@ -334,7 +334,17 @@ it("test", async () => {
 
 Internally, SAVEPOINT, which is formulated in the Standard SQL, is used.
 
-Unfortunately, however, MongoDB does not support partial rollbacks within a Transaction using SAVEPOINT, so MongoDB is not able to reproduce rollbacks.
+Unfortunately, however, MongoDB does not support partial rollbacks within a Transaction using SAVEPOINT, so MongoDB is not able to reproduce rollbacks. In this case, set the `disableReproduceTransactionRollback` option to true.
+
+```js
+/* jest.config.mjs */
+export default {
+  testEnvironment: "@quramy/jest-prisma/environment",
+  testEnvironmentOptions: {
+    disableReproduceTransactionRollback: true, // <- add this
+  },
+};
+```
 
 ## References
 
@@ -362,6 +372,15 @@ export interface JestPrismaEnvironmentOptions {
    *
    */
   readonly disableRollback?: boolean;
+
+  /**
+   *
+   * If set to true, it will not reproduce the rollback behavior when an error occurs at the point where the transaction is used.
+   *
+   * In particular, if you are using MongoDB as the Database connector, you must set it to true.
+   *
+   */
+  readonly disableReproduceTransactionRollback?: boolean;
 
   /**
    *

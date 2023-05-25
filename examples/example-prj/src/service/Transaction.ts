@@ -6,13 +6,14 @@ export class Transaction {
   constructor(readonly prisma: PrismaClient) {}
 
   async addUserWithSequentialOperationsFailed(userName: string) {
+    const data = {
+      id: `user-${seq++}`,
+      name: userName,
+    };
     await this.prisma
       .$transaction([
         this.prisma.user.create({
-          data: {
-            id: `user-${seq++}`,
-            name: userName,
-          },
+          data,
         }),
         // this operation will fail because user with id "not-exist" does not exist.
         this.prisma.user.update({
@@ -23,6 +24,8 @@ export class Transaction {
         }),
       ])
       .catch(() => null);
+
+    return data;
   }
 
   async addUserWithSequentialOperationsSuccess(userName: string) {
@@ -39,18 +42,21 @@ export class Transaction {
   }
 
   async addUserWithInteractiveTransactionsFailed(userName: string) {
+    const data = {
+      id: `user-${seq++}`,
+      name: userName,
+    };
     await this.prisma
       .$transaction(async p => {
         await p.user.create({
-          data: {
-            id: `user-${seq++}`,
-            name: userName,
-          },
+          data,
         });
 
         throw new Error("transaction failed.");
       })
       .catch(() => null);
+
+    return data;
   }
 
   async addUserWithInteractiveTransactionsSuccess(userName: string) {

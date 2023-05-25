@@ -105,7 +105,7 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
       this.originalClient
         .$transaction(
           transactionClient => {
-            this.prismaClientProxy = createProxy(transactionClient, this.originalClient);
+            this.prismaClientProxy = createProxy(transactionClient, this.originalClient, this.options);
             resolve();
             return new Promise(
               (resolve, reject) => (this.triggerTransactionEnd = this.options.disableRollback ? resolve : reject),
@@ -141,13 +141,18 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
   }
 }
 
-function fakeInnerTransactionFactory(parentTxClient: Prisma.TransactionClient) {
+function fakeInnerTransactionFactory(
+  parentTxClient: Prisma.TransactionClient,
+  disableReproduceTransactionRollback: boolean,
+) {
   let seq = 1;
   const fakeTransactionMethod = async (
     arg: PromiseLike<unknown>[] | ((client: Prisma.TransactionClient) => Promise<unknown>),
   ) => {
     const savePointId = `test_${seq++}`;
-    await parentTxClient.$executeRawUnsafe(`SAVEPOINT ${savePointId};`);
+    if (!disableReproduceTransactionRollback) {
+      await parentTxClient.$executeRawUnsafe(`SAVEPOINT ${savePointId};`);
+    }
     if (Array.isArray(arg)) {
       try {
         const results = [] as unknown[];
@@ -155,19 +160,27 @@ function fakeInnerTransactionFactory(parentTxClient: Prisma.TransactionClient) {
           const result = await prismaPromise;
           results.push(result);
         }
-        await parentTxClient.$executeRawUnsafe(`RELEASE SAVEPOINT ${savePointId};`);
+        if (!disableReproduceTransactionRollback) {
+          await parentTxClient.$executeRawUnsafe(`RELEASE SAVEPOINT ${savePointId};`);
+        }
         return results;
       } catch (err) {
-        await parentTxClient.$executeRawUnsafe(`ROLLBACK TO SAVEPOINT ${savePointId};`);
+        if (!disableReproduceTransactionRollback) {
+          await parentTxClient.$executeRawUnsafe(`ROLLBACK TO SAVEPOINT ${savePointId};`);
+        }
         throw err;
       }
     } else {
       try {
         const result = await arg(parentTxClient);
-        await parentTxClient.$executeRawUnsafe(`RELEASE SAVEPOINT ${savePointId};`);
+        if (!disableReproduceTransactionRollback) {
+          await parentTxClient.$executeRawUnsafe(`RELEASE SAVEPOINT ${savePointId};`);
+        }
         return result;
       } catch (err) {
-        await parentTxClient.$executeRawUnsafe(`ROLLBACK TO SAVEPOINT ${savePointId};`);
+        if (!disableReproduceTransactionRollback) {
+          await parentTxClient.$executeRawUnsafe(`ROLLBACK TO SAVEPOINT ${savePointId};`);
+        }
         throw err;
       }
     }
@@ -175,8 +188,11 @@ function fakeInnerTransactionFactory(parentTxClient: Prisma.TransactionClient) {
   return fakeTransactionMethod;
 }
 
-function createProxy(txClient: Prisma.TransactionClient, originalClient: any) {
-  const boundFakeTransactionMethod = fakeInnerTransactionFactory(txClient);
+function createProxy(txClient: Prisma.TransactionClient, originalClient: any, options: JestPrismaEnvironmentOptions) {
+  const boundFakeTransactionMethod = fakeInnerTransactionFactory(
+    txClient,
+    options.disableReproduceTransactionRollback ?? false,
+  );
   return new Proxy(txClient, {
     get: (target, name) => {
       const delegate = target[name as keyof Prisma.TransactionClient];
