@@ -300,13 +300,13 @@ Caveat: This work around might me affect your test cases using Jest fake timer f
 
 See also https://github.com/Quramy/jest-prisma/issues/56.
 
-## Limitations
-
 ### Transaction Rollback
 
-At the moment, [the functionality to perform a rollback when an error occurs within the callback of $transaction from Prisma](https://www.prisma.io/docs/concepts/components/prisma-client/transactions#:~:text=If%20your%20application%20encounters%20an%20error%20along%20the%20way%2C%20the%20async%20function%20will%20throw%20an%20exception%20and%20automatically%20rollback%20the%20transaction.) is not reproducible in this library. Therefore, the following code does not work as intended.
+If you are using [$transaction callbacks in Prisma with the feature to roll back in case of an error](https://www.prisma.io/docs/concepts/components/prisma-client/transactions#:~:text=If%20your%20application%20encounters%20an%20error%20along%20the%20way%2C%20the%20async%20function%20will%20throw%20an%20exception%20and%20automatically%20rollback%20the%20transaction.), that's ok too. :D
 
-```typescript
+jest-prisma reproduces them in tests
+
+```ts
 const someTransaction = async prisma => {
   await prisma.$transaction(async p => {
     await p.user.create({
@@ -325,14 +325,16 @@ it("test", async () => {
   const before = await prisma.user.aggregate({ _count: true });
   expect(before._count).toBe(0);
 
-  await transaction(prisma);
+  await someTransaction(prisma);
 
   const after = await prisma.user.aggregate({ _count: true });
-  expect(after._count).toBe(0); // <- this will be 1
+  expect(after._count).toBe(0); // <- this will be 0
 });
 ```
 
-See https://github.com/Quramy/jest-prisma/issues/88 for the latest information
+Internally, SAVEPOINT, which is formulated in the Standard SQL, is used.
+
+Unfortunately, however, MongoDB does not support partial rollbacks within a Transaction using SAVEPOINT, so MongoDB is not able to reproduce rollbacks.
 
 ## References
 

@@ -142,25 +142,32 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
 }
 
 function fakeInnerTransactionFactory(parentTxClient: Prisma.TransactionClient) {
+  let seq = 1;
   const fakeTransactionMethod = async (
     arg: PromiseLike<unknown>[] | ((client: Prisma.TransactionClient) => Promise<unknown>),
   ) => {
+    const savePointId = `test_${seq++}`;
+    await parentTxClient.$executeRawUnsafe(`SAVEPOINT ${savePointId};`);
     if (Array.isArray(arg)) {
-      const results = [] as unknown[];
-      for (const prismaPromise of arg) {
-        const result = await prismaPromise;
-        results.push(result);
+      try {
+        const results = [] as unknown[];
+        for (const prismaPromise of arg) {
+          const result = await prismaPromise;
+          results.push(result);
+        }
+        await parentTxClient.$executeRawUnsafe(`RELEASE SAVEPOINT ${savePointId};`);
+        return results;
+      } catch (err) {
+        await parentTxClient.$executeRawUnsafe(`ROLLBACK TO SAVEPOINT ${savePointId};`);
+        throw err;
       }
-      return results;
     } else {
-      const now = Date.now();
-      await parentTxClient.$executeRaw`SAVEPOINT ${now};`;
       try {
         const result = await arg(parentTxClient);
-        await parentTxClient.$executeRaw`RELEASE SAVEPOINT ${now};`;
+        await parentTxClient.$executeRawUnsafe(`RELEASE SAVEPOINT ${savePointId};`);
         return result;
       } catch (err) {
-        await parentTxClient.$executeRaw`ROLLBACK TO SAVEPOINT ${now};`;
+        await parentTxClient.$executeRawUnsafe(`ROLLBACK TO SAVEPOINT ${savePointId};`);
         throw err;
       }
     }
