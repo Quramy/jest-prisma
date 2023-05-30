@@ -22,12 +22,12 @@ export interface JestPrismaEnvironmentOptions {
 
   /**
    *
-   * If set to true, it will not reproduce the rollback behavior when an error occurs at the point where the transaction is used.
+   * If set to true, it will reproduce the rollback behavior when an error occurs at the point where the transaction is used.
    *
-   * In particular, if you are using MongoDB as the Database connector, you must set it to true.
+   * In particular, if you are using MongoDB as the Database connector, you must not set it to true.
    *
    */
-  readonly disableReproduceTransactionRollback?: boolean;
+  readonly enableExperimentalRollbackInTransaction?: boolean;
 
   /**
    *

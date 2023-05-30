@@ -304,7 +304,19 @@ See also https://github.com/Quramy/jest-prisma/issues/56.
 
 If you are using [$transaction callbacks in Prisma with the feature to roll back in case of an error](https://www.prisma.io/docs/concepts/components/prisma-client/transactions#:~:text=If%20your%20application%20encounters%20an%20error%20along%20the%20way%2C%20the%20async%20function%20will%20throw%20an%20exception%20and%20automatically%20rollback%20the%20transaction.), that's ok too. :D
 
-jest-prisma reproduces them in tests
+Set `enableExperimentalRollbackInTransaction` in testEnvironmentOptions to true.
+
+```js
+/* jest.config.mjs */
+export default {
+  testEnvironment: "@quramy/jest-prisma/environment",
+  testEnvironmentOptions: {
+    enableExperimentalRollbackInTransaction: true, // <- add this
+  },
+};
+```
+
+Then, jest-prisma reproduces them in tests
 
 ```ts
 const someTransaction = async prisma => {
@@ -334,17 +346,7 @@ it("test", async () => {
 
 Internally, SAVEPOINT, which is formulated in the Standard SQL, is used.
 
-Unfortunately, however, MongoDB does not support partial rollbacks within a Transaction using SAVEPOINT, so MongoDB is not able to reproduce rollbacks. In this case, set the `disableReproduceTransactionRollback` option to true.
-
-```js
-/* jest.config.mjs */
-export default {
-  testEnvironment: "@quramy/jest-prisma/environment",
-  testEnvironmentOptions: {
-    disableReproduceTransactionRollback: true, // <- add this
-  },
-};
-```
+Unfortunately, however, MongoDB does not support partial rollbacks within a Transaction using SAVEPOINT, so MongoDB is not able to reproduce rollbacks. In this case, do not set `enableExperimentalRollbackInTransaction` to true.
 
 ## References
 
@@ -375,12 +377,12 @@ export interface JestPrismaEnvironmentOptions {
 
   /**
    *
-   * If set to true, it will not reproduce the rollback behavior when an error occurs at the point where the transaction is used.
+   * If set to true, it will reproduce the rollback behavior when an error occurs at the point where the transaction is used.
    *
-   * In particular, if you are using MongoDB as the Database connector, you must set it to true.
+   * In particular, if you are using MongoDB as the Database connector, you must not set it to true.
    *
    */
-  readonly disableReproduceTransactionRollback?: boolean;
+  readonly enableExperimentalRollbackInTransaction?: boolean;
 
   /**
    *

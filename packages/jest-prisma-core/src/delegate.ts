@@ -143,14 +143,14 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
 
 function fakeInnerTransactionFactory(
   parentTxClient: Prisma.TransactionClient,
-  disableReproduceTransactionRollback: boolean,
+  enableExperimentalRollbackInTransaction: boolean,
 ) {
   let seq = 1;
   const fakeTransactionMethod = async (
     arg: PromiseLike<unknown>[] | ((client: Prisma.TransactionClient) => Promise<unknown>),
   ) => {
     const savePointId = `test_${seq++}`;
-    if (!disableReproduceTransactionRollback) {
+    if (enableExperimentalRollbackInTransaction) {
       await parentTxClient.$executeRawUnsafe(`SAVEPOINT ${savePointId};`);
     }
     if (Array.isArray(arg)) {
@@ -160,12 +160,12 @@ function fakeInnerTransactionFactory(
           const result = await prismaPromise;
           results.push(result);
         }
-        if (!disableReproduceTransactionRollback) {
+        if (enableExperimentalRollbackInTransaction) {
           await parentTxClient.$executeRawUnsafe(`RELEASE SAVEPOINT ${savePointId};`);
         }
         return results;
       } catch (err) {
-        if (!disableReproduceTransactionRollback) {
+        if (enableExperimentalRollbackInTransaction) {
           await parentTxClient.$executeRawUnsafe(`ROLLBACK TO SAVEPOINT ${savePointId};`);
         }
         throw err;
@@ -173,12 +173,12 @@ function fakeInnerTransactionFactory(
     } else {
       try {
         const result = await arg(parentTxClient);
-        if (!disableReproduceTransactionRollback) {
+        if (enableExperimentalRollbackInTransaction) {
           await parentTxClient.$executeRawUnsafe(`RELEASE SAVEPOINT ${savePointId};`);
         }
         return result;
       } catch (err) {
-        if (!disableReproduceTransactionRollback) {
+        if (enableExperimentalRollbackInTransaction) {
           await parentTxClient.$executeRawUnsafe(`ROLLBACK TO SAVEPOINT ${savePointId};`);
         }
         throw err;
@@ -191,7 +191,7 @@ function fakeInnerTransactionFactory(
 function createProxy(txClient: Prisma.TransactionClient, originalClient: any, options: JestPrismaEnvironmentOptions) {
   const boundFakeTransactionMethod = fakeInnerTransactionFactory(
     txClient,
-    options.disableReproduceTransactionRollback ?? false,
+    options.enableExperimentalRollbackInTransaction ?? false,
   );
   return new Proxy(txClient, {
     get: (target, name) => {
