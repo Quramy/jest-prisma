@@ -135,7 +135,7 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
       const breadcrumb = [this.testPath, ...nameFragments.reverse().slice(1)].join(" > ");
       console.log(chalk.blue.bold.inverse(" QUERY ") + " " + chalk.gray(breadcrumb));
       for (const event of this.logBuffer) {
-        console.log(`${chalk.blue("  jest-prisma:query")} ${event.query}`);
+        console.log(`${chalk.blue("  jest-prisma:query")} ${event.query} -- params:${event.params}`);
       }
     }
   }
