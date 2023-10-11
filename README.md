@@ -18,11 +18,18 @@ $ npm i @quramy/jest-prisma -D
 #### Configure Jest
 
 ```js
+/* setup-prisma.js */
+// Should mock `@prisma/client` module in Test Env by original module
+jest.mock("@prisma/client", () => jestPrisma.originalModule);
+```
+
+```js
 /* jest.config.mjs */
 export default {
   // ... Your jest configuration
 
   testEnvironment: "@quramy/jest-prisma/environment",
+  setupFilesAfterEnv: ["<rootDir>/setup-prisma.js"],
 };
 ```
 
@@ -131,20 +138,11 @@ You can replace the singleton instance to `jestPrisma.client` via `jest.mock`.
 
 ```js
 /* setup-prisma.js */
-
 jest.mock("./src/client", () => {
   return {
     prisma: jestPrisma.client,
   };
 });
-```
-
-```js
-/* jest.config.mjs */
-export default {
-  testEnvironment: "@quramy/jest-prisma/environment",
-  setupFilesAfterEnv: ["<rootDir>/setup-prisma.js"],
-};
 ```
 
 ```ts

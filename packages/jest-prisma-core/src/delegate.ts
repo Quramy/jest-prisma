@@ -69,6 +69,7 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
         },
       }),
       originalClient: this.originalClient,
+      originalModule: await import("@prisma/client"),
     };
     return jestPrisma;
   }
