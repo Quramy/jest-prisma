@@ -10,6 +10,8 @@ export interface JestPrisma {
   readonly client: PrismaClient;
 
   readonly originalClient: PrismaClient;
+
+  readonly originalModule: typeof import("@prisma/client");
 }
 
 export interface JestPrismaEnvironmentOptions {
