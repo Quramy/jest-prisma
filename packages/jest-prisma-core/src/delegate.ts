@@ -17,7 +17,7 @@ const DEFAULT_TIMEOUT = 5_000;
 export class PrismaEnvironmentDelegate implements PartialEnvironment {
   private prismaClientProxy: PrismaClient | undefined;
   private originalClient: PrismaClient;
-  private triggerTransactionEnd: () => void = () => null;
+  private triggerTransactionEnd: (...args: unknown[]) => void = () => null;
   private readonly options: JestPrismaEnvironmentOptions;
   private readonly testPath: string;
   private logBuffer: Prisma.QueryEvent[] | undefined = undefined;
