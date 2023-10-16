@@ -16,7 +16,7 @@ export default class PrismaEnvironment extends Environment {
   async setup() {
     const jestPrisma = await this.delegate.preSetup();
     await super.setup();
-    this.global.jestPrisma = jestPrisma;
+    this.global.jestPrisma = jestPrisma as any;
   }
 
   handleTestEvent(event: Circus.Event) {

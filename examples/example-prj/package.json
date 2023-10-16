@@ -6,7 +6,7 @@
     "bootstrap": "npm run generate",
     "migrate:test:ci": "DATABASE_URL=\"file:./test.db\" prisma migrate dev",
     "generate": "prisma generate",
-    "test": "jest",
+    "test": "DATABASE_URL=\"file:./test.db\" jest",
     "test:ci": "DATABASE_URL=\"file:./test.db\" jest"
   },
   "devDependencies": {

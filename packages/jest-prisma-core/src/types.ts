@@ -1,15 +1,24 @@
-import type { PrismaClient } from "@prisma/client";
+export interface PrismaClientLike {
+  $connect: () => Promise<unknown>;
+  $disconnect: () => Promise<unknown>;
+  $transaction: (
+    fn: (txClient: PrismaClientLike) => Promise<unknown>,
+    Options?: { maxWait: number; timeout: number },
+  ) => Promise<unknown>;
+  $executeRawUnsafe: (query: string) => Promise<number>;
+  $on: (event: "query", callbacck: (event: { readonly query: string; readonly params: string }) => unknown) => void;
+}
 
-export interface JestPrisma {
+export interface JestPrisma<T = PrismaClientLike> {
   /**
    *
    * Primsa Client Instance whose transaction are isolated for each test case.
    * And this transaction is rolled back automatically after each test case.
    *
    */
-  readonly client: PrismaClient;
+  readonly client: T;
 
-  readonly originalClient: PrismaClient;
+  readonly originalClient: T;
 }
 
 export interface JestPrismaEnvironmentOptions {
