@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": ["@types/jest"]
+  },
+  "includes": ["typeDefs/**/*.ts"],
+  "references": [{ "path": "../../packages/jest-prisma" }]
+}
