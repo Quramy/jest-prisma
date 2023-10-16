@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "example-prj-customized-client",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "scripts": {
     "bootstrap": "npm run generate",
     "migrate:test:ci": "DATABASE_URL=\"file:./test.db\" prisma migrate dev",
