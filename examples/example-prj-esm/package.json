@@ -7,7 +7,7 @@
     "bootstrap": "npm run generate",
     "migrate:test:ci": "DATABASE_URL=\"file:./test.db\" prisma migrate dev",
     "generate": "prisma generate",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test": "DATABASE_URL=\"file:./test.db\" NODE_OPTIONS=--experimental-vm-modules jest",
     "test:ci": "DATABASE_URL=\"file:./test.db\" NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "example-prj",
+  "name": "example-prj-customized-client",
   "version": "1.6.0",
   "scripts": {
     "bootstrap": "npm run generate",

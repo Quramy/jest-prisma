@@ -101,6 +101,72 @@ test("it should execute prisma client", () => {
 });
 ```
 
+## Use customized `PrismaClient` instance
+
+By default, jest-prisma instantiates and uses Prisma client instance from `@prisma/client`.
+
+Sometimes you want to use customized (or extended) Prisma client instance, such as:
+
+```ts
+/* src/client.ts */
+import { PrismaClient } from "@prisma/client";
+
+export const prisma = new PrismaClient().$extends({
+  client: {
+    $myMethod: () => {
+      /* ... */
+    },
+  },
+});
+```
+
+You need configure jest-prisma by the following steps.
+
+First, declare type of `global.jestPrisma` variable:
+
+```ts
+/* typeDefs/jest-prisma.d.ts */
+
+import type { JestPrisma } from "@quramy/jest-prisma-core";
+import type { prisma } from "../src/client";
+
+declare global {
+  var jestPrisma: JestPrisma<typeof prisma>;
+}
+```
+
+And add the path of this declaration to your tsconfig.json:
+
+```js
+/* tsconfig.json */
+
+{
+  "compilerOptions": {
+    "types": ["@types/jest"], // You don't need list "@quramy/jest-prisma"
+  },
+  "includes": ["typeDefs/jest-prisma.d.ts"],
+}
+```
+
+Finally, configure jest-prisma environment using `setupFilesAfterEnv`:
+
+```js
+/* jest.config.mjs */
+
+export default {
+  testEnvironment: "@quramy/jest-prisma/environment",
+  setupFilesAfterEnv: ["setupAfterEnv.ts"],
+};
+```
+
+```js
+/* setupAfterEnv.ts */
+
+import { prisma } from "./src/client";
+
+jestPrisma.initializeClient(prisma);
+```
+
 ## Tips
 
 ### Singleton
@@ -353,14 +419,21 @@ Unfortunately, however, MongoDB does not support partial rollbacks within a Tran
 ### `global.jestPrisma`
 
 ```ts
-export interface JestPrisma {
+export interface JestPrisma<T = PrismaClientLike> {
   /**
    *
    * Primsa Client Instance whose transaction are isolated for each test case.
    * And this transaction is rolled back automatically after each test case.
    *
    */
-  readonly client: PrismaClient;
+  readonly client: T;
+
+  /**
+   *
+   * You can call this from setupAfterEnv script and set your customized PrismaClient instance.
+   *
+   */
+  readonly initializeClient: (client: unknown) => void;
 }
 ```
 
