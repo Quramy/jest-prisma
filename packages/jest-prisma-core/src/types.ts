@@ -19,6 +19,13 @@ export interface JestPrisma<T = PrismaClientLike> {
   readonly client: T;
 
   readonly originalClient: T;
+
+  /**
+   *
+   * You can call this from setupAfterEnv script and set your customized PrismaClient instance.
+   *
+   */
+  readonly initializeClient: (client: unknown) => void;
 }
 
 export interface JestPrismaEnvironmentOptions {

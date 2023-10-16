@@ -14,8 +14,8 @@ const DEFAULT_MAX_WAIT = 5_000;
 const DEFAULT_TIMEOUT = 5_000;
 
 export class PrismaEnvironmentDelegate implements PartialEnvironment {
-  private prismaClientProxy: PrismaClientLike | undefined;
   private _originalClient: PrismaClientLike | undefined;
+  private prismaClientProxy: PrismaClientLike | undefined;
   private connected = false;
   private triggerTransactionEnd: (...args: unknown[]) => void = () => null;
   private readonly options: JestPrismaEnvironmentOptions;
@@ -24,17 +24,6 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
 
   getClient() {
     return this.prismaClientProxy;
-  }
-
-  private get originalClient() {
-    if (!this._originalClient) {
-      const originalClient = loadDefaultClient(this.options) as PrismaClientLike;
-      originalClient.$on("query" as unknown as never, (event: unknown) => {
-        this.logBuffer?.push(event as { readonly query: string; readonly params: string });
-      });
-      this._originalClient = originalClient;
-    }
-    return this._originalClient;
   }
 
   constructor(config: JestEnvironmentConfig, context: EnvironmentContext) {
@@ -46,6 +35,15 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
   async preSetup<T = PrismaClientLike>() {
     const self = this;
     const jestPrisma: JestPrisma<PrismaClientLike> = {
+      initializeClient: client => {
+        if (this._originalClient) {
+          console.warn("jestPrisma has already set Prisma client instance.");
+        }
+        this._originalClient = client as PrismaClientLike;
+        this._originalClient.$on?.("query" as unknown as never, (event: unknown) => {
+          this.logBuffer?.push(event as { readonly query: string; readonly params: string });
+        });
+      },
       client: new Proxy<PrismaClientLike>({} as never, {
         get: (_, name: keyof PrismaClientLike) => {
           if (!this.prismaClientProxy) {
@@ -81,7 +79,18 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
   }
 
   async teardown() {
-    await this.originalClient.$disconnect();
+    this.originalClient.$disconnect?.();
+  }
+
+  private get originalClient() {
+    if (!this._originalClient) {
+      const originalClient = loadDefaultClient(this.options) as PrismaClientLike;
+      originalClient.$on("query" as unknown as never, (event: unknown) => {
+        this.logBuffer?.push(event as { readonly query: string; readonly params: string });
+      });
+      this._originalClient = originalClient;
+    }
+    return this._originalClient;
   }
 
   private async checkInteractiveTransaction() {
