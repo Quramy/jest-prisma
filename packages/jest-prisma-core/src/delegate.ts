@@ -47,12 +47,14 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
       client: new Proxy<PrismaClientLike>({} as never, {
         get: (_, name: keyof PrismaClientLike) => {
           if (!this.prismaClientProxy) {
-            console.warn(
-              "jsetPrisma.client should be used in test or beforeEach functions because transaction has not yet started.",
-            );
-            console.warn(
-              "If you want to access Prisma client in beforeAll or afterAll, use jestPrisma.originalClient.",
-            );
+            if ((name as string) !== "__esModule") {
+              console.warn(
+                "jestPrisma.client should be used in test or beforeEach functions because transaction has not yet started.",
+              );
+              console.warn(
+                "If you want to access Prisma client in beforeAll or afterAll, use jestPrisma.originalClient.",
+              );
+            }
           } else {
             return this.prismaClientProxy[name];
           }
