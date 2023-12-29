@@ -70,7 +70,7 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
   handleTestEvent(event: Circus.Event) {
     if (event.name === "test_start") {
       return this.beginTransaction();
-    } else if (event.name === "test_done" || event.name === "test_skip") {
+    } else if (event.name === "test_done" || event.name === "test_skip" || event.name === "test_todo") {
       return this.endTransaction();
     } else if (event.name === "test_fn_start") {
       this.logBuffer = [];
