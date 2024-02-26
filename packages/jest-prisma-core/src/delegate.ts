@@ -12,6 +12,7 @@ type PartialEnvironment = Pick<JestEnvironment<unknown>, "handleTestEvent" | "te
 
 const DEFAULT_MAX_WAIT = 5_000;
 const DEFAULT_TIMEOUT = 5_000;
+const DEFAULT_ISOLATION_LEVEL = undefined; // use database default
 
 export class PrismaEnvironmentDelegate implements PartialEnvironment {
   private _originalClient: PrismaClientLike | undefined;
@@ -127,6 +128,7 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
           {
             maxWait: this.options.maxWait ?? DEFAULT_MAX_WAIT,
             timeout: this.options.timeout ?? DEFAULT_TIMEOUT,
+            isloationLevel: this.options.isolationLevel ?? DEFAULT_ISOLATION_LEVEL,
           },
         )
         .catch(() => true),
