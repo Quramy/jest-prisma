@@ -30,8 +30,5 @@
     "packages/*",
     "examples/*"
   ],
-  "version": "0.1.0",
-  "dependencies": {
-    "bootstrap": "^5.3.2"
-  }
+  "version": "0.1.0"
 }
