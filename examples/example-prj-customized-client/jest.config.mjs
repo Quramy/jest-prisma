@@ -4,5 +4,5 @@ export default {
     "^.+\\.tsx?$": ["ts-jest", { diagnostics: false }],
   },
   setupFilesAfterEnv: ["<rootDir>/setupAfterEnv.ts"],
-  testEnvironment: "@quramy/jest-prisma/environment",
+  testEnvironment: "@quramy/jest-prisma-node/environment",
 };
