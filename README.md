@@ -484,6 +484,15 @@ export interface JestPrismaEnvironmentOptions {
 
   /**
    *
+   * Sets the transaction isolation level. By default this is set to the value currently configured in your database.
+   *
+   * @link https://www.prisma.io/docs/orm/prisma-client/queries/transactions#transaction-isolation-level
+   *
+   */
+  readonly isolationLevel?: Prisma.TransactionIsolationLevel;
+
+  /**
+   *
    * Override the database connection URL.
    *
    * Useful if you have a separate database for testing.

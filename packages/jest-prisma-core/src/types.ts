@@ -1,9 +1,16 @@
+type PrismaTransactionIsolationLevel =
+  | "ReadUncommitted"
+  | "ReadCommitted"
+  | "RepeatableRead"
+  | "Snapshot"
+  | "Serializable";
+
 export interface PrismaClientLike {
   $connect: () => Promise<unknown>;
   $disconnect: () => Promise<unknown>;
   $transaction: (
     fn: (txClient: PrismaClientLike) => Promise<unknown>,
-    Options?: { maxWait: number; timeout: number },
+    Options?: { maxWait: number; timeout: number; isolationLevel?: PrismaTransactionIsolationLevel },
   ) => Promise<unknown>;
   $executeRawUnsafe: (query: string) => Promise<number>;
   $on: (event: "query", callbacck: (event: { readonly query: string; readonly params: string }) => unknown) => void;
@@ -69,6 +76,15 @@ export interface JestPrismaEnvironmentOptions {
    *
    */
   readonly timeout?: number;
+
+  /**
+   *
+   * Sets the transaction isolation level. By default this is set to the value currently configured in your database.
+   *
+   * @link https://www.prisma.io/docs/orm/prisma-client/queries/transactions#supported-isolation-levels
+   *
+   */
+  readonly isolationLevel?: PrismaTransactionIsolationLevel;
 
   /**
    *
