@@ -370,7 +370,7 @@ See also https://github.com/Quramy/jest-prisma/issues/56.
 
 If you are using [$transaction callbacks in Prisma with the feature to roll back in case of an error](https://www.prisma.io/docs/concepts/components/prisma-client/transactions#:~:text=If%20your%20application%20encounters%20an%20error%20along%20the%20way%2C%20the%20async%20function%20will%20throw%20an%20exception%20and%20automatically%20rollback%20the%20transaction.), that's ok too. :D
 
-Set `enableExperimentalRollbackInTransaction` in testEnvironmentOptions to true.
+Set `enableExperimentalRollbackInTransaction` in testEnvironmentOptions to `true`. This option allows nested transaction.
 
 ```js
 /* jest.config.mjs */
@@ -409,6 +409,9 @@ it("test", async () => {
   expect(after._count).toBe(0); // <- this will be 0
 });
 ```
+
+> [!TIP]
+> The nested transaction is used to suppress PostgreSQL's `current transaction is aborted commands ignored until end of transaction block` error. See https://github.com/Quramy/jest-prisma/issues/141 if you want more details.
 
 Internally, SAVEPOINT, which is formulated in the Standard SQL, is used.
 
