@@ -82,7 +82,7 @@ export class PrismaEnvironmentDelegate implements PartialEnvironment {
   }
 
   async teardown() {
-    this.originalClient.$disconnect?.();
+    await this.originalClient.$disconnect?.();
   }
 
   private get originalClient() {
