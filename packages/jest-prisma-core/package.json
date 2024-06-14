@@ -1,6 +1,6 @@
 {
   "name": "@quramy/jest-prisma-core",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "engines": {
