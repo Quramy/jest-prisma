@@ -1,7 +1,7 @@
 import type { JestPrismaEnvironmentOptions } from "./types";
 
 export function loadDefaultClient(options: JestPrismaEnvironmentOptions) {
-  const { PrismaClient } = require("@prisma/client");
+  const { PrismaClient } = require(options.clientPath ?? "@prisma/client");
   const client: unknown = new PrismaClient({
     log: [{ level: "query", emit: "event" }],
     ...(options.databaseUrl && {

@@ -94,4 +94,13 @@ export interface JestPrismaEnvironmentOptions {
    *
    */
   readonly databaseUrl?: string;
+
+  /**
+   *
+   * Override the path to the Prisma Client.
+   *
+   * If this is not set, defaults to `@prisma/client`.
+   *
+   */
+  readonly clientPath?: string;
 }
