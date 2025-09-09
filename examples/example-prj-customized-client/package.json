@@ -12,10 +12,10 @@
   "devDependencies": {
     "@quramy/jest-prisma": "*",
     "@prisma/client": "*",
-    "@types/jest": "29.2.1",
+    "@types/jest": "^30.0.0",
     "prisma": "*",
-    "jest": "29.2.2",
-    "ts-jest": "29.0.3"
+    "jest": "^30.0.0",
+    "ts-jest": "29.4.1"
   },
   "dependencies": {
     "sqlite": "4.1.2"
