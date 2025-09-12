@@ -173,7 +173,12 @@ function fakeInnerTransactionFactory(
         const results = [] as unknown[];
         for (const prismaPromise of arg) {
           const result = await prismaPromise;
-          results.push(result);
+          // Apply deep clone to each result if needed
+          if (result && typeof result === "object") {
+            results.push(deepCloneWithTypePreservation(result));
+          } else {
+            results.push(result);
+          }
         }
         if (enableExperimentalRollbackInTransaction) {
           await parentTxClient.$executeRawUnsafe(`RELEASE SAVEPOINT ${savePointId};`);
@@ -203,6 +208,90 @@ function fakeInnerTransactionFactory(
   return fakeTransactionMethod;
 }
 
+function deepCloneWithTypePreservation(obj: any): any {
+  // Handle null and undefined
+  if (obj === null || obj === undefined) return obj;
+
+  // Handle primitives
+  if (typeof obj !== "object") return obj;
+
+  // Handle Date
+  if (obj instanceof Date) return new Date(obj.getTime());
+
+  // Handle Decimal and other Prisma custom types
+  if (obj.constructor && obj.constructor.name === "Decimal") {
+    // Preserve Decimal instances by returning the same instance
+    // as they are immutable by design
+    return obj;
+  }
+
+  // Handle BigInt
+  if (typeof obj === "bigint") return obj;
+
+  // Handle Arrays
+  if (Array.isArray(obj)) {
+    return obj.map(item => deepCloneWithTypePreservation(item));
+  }
+
+  // Handle Regular Objects
+  const cloned: any = {};
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      cloned[key] = deepCloneWithTypePreservation(obj[key]);
+    }
+  }
+
+  return cloned;
+}
+
+function createProxyModel(model: any) {
+  return new Proxy(model, {
+    get: (target, prop) => {
+      const value = target[prop];
+      if (typeof value === "function") {
+        return function (...args: any[]) {
+          // Call the original method
+          const result = value.apply(target, args);
+
+          // For PrismaPromise objects, we need to wrap them in a Proxy to intercept the resolved value
+          // without breaking the promise chain or converting to a regular Promise
+          if (result && typeof result.then === "function") {
+            // Create a proxy for the PrismaPromise that intercepts the 'then' method
+            return new Proxy(result, {
+              get(promiseTarget, promiseProp) {
+                if (promiseProp === "then") {
+                  return function (onFulfilled?: any, onRejected?: any) {
+                    // Wrap the onFulfilled callback to clone the result
+                    const wrappedOnFulfilled = onFulfilled
+                      ? (value: any) => {
+                          const clonedValue =
+                            value && typeof value === "object" ? deepCloneWithTypePreservation(value) : value;
+                          return onFulfilled(clonedValue);
+                        }
+                      : undefined;
+
+                    // Call the original 'then' with our wrapped callback
+                    return promiseTarget.then(wrappedOnFulfilled, onRejected);
+                  };
+                }
+                // For all other properties/methods, return the original
+                return (promiseTarget as any)[promiseProp];
+              },
+            });
+          }
+
+          // For non-promise results, clone if needed
+          if (result && typeof result === "object") {
+            return deepCloneWithTypePreservation(result);
+          }
+          return result;
+        };
+      }
+      return value;
+    },
+  });
+}
+
 function createProxy(txClient: PrismaClientLike, originalClient: any, options: JestPrismaEnvironmentOptions) {
   const boundFakeTransactionMethod = fakeInnerTransactionFactory(
     txClient,
@@ -211,7 +300,18 @@ function createProxy(txClient: PrismaClientLike, originalClient: any, options: J
   return new Proxy(txClient, {
     get: (target, name) => {
       const delegate = target[name as keyof PrismaClientLike];
-      if (delegate) return delegate;
+      if (delegate) {
+        // For Prisma models (like user, post, etc.), wrap them with a proxy
+        // to handle immutable objects returned from Prisma 6
+        if (
+          typeof delegate === "object" &&
+          delegate !== null &&
+          !["$connect", "$disconnect", "$on", "$transaction", "$executeRawUnsafe"].includes(name as string)
+        ) {
+          return createProxyModel(delegate);
+        }
+        return delegate;
+      }
       if (name === "$transaction") {
         return boundFakeTransactionMethod;
       }
