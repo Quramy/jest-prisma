@@ -1,6 +1,6 @@
 # jest-prisma
 
-[![github actions](https://github.com/Quramy/jest-prisma/workflows/build/badge.svg)](https://github.com/Quramy/jest-prisma/actions)
+[![build](https://github.com/Quramy/jest-prisma/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/Quramy/jest-prisma/actions/workflows/build.yml)
 [![npm version](https://badge.fury.io/js/@quramy%2Fjest-prisma.svg)](https://badge.fury.io/js/@quramy%2Fjest-prisma)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Quramy/jest-prisma/main/LICENSE.txt)
 
