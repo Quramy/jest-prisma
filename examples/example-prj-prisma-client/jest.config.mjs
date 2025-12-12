@@ -3,6 +3,6 @@ export default {
   transform: {
     "^.+\\.tsx?$": ["ts-jest", { diagnostics: false }],
   },
-  setupFilesAfterEnv: ["<rootDir>/setupAfterEnv.ts"],
   testEnvironment: "@quramy/jest-prisma-node/environment",
+  setupFilesAfterEnv: ["<rootDir>/setupAfterEnv.ts"],
 };

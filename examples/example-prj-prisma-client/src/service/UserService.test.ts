@@ -1,3 +1,8 @@
+/**
+ *
+ * @jest-environment-options { "verboseQuery": true }
+ *
+ */
 import { UserService } from "./UserService";
 
 describe(UserService, () => {
