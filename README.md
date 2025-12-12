@@ -104,23 +104,25 @@ test("it should execute prisma client", () => {
 ## Use customized `PrismaClient` instance
 
 By default, jest-prisma instantiates and uses Prisma client instance from `@prisma/client`.
+But the `prisma-client` generator generates client files to directory specified by `output` option. In this case, jest-prisma cannot create instance via `@prisma/client`.
 
-Sometimes you want to use customized (or extended) Prisma client instance, such as:
+```graphql
+/* prisma/schema.prisma */
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/__generated__/prisma-client"
+}
+```
 
 ```ts
 /* src/client.ts */
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "./__generated__/prisma-client/client";
 
-export const prisma = new PrismaClient().$extends({
-  client: {
-    $myMethod: () => {
-      /* ... */
-    },
-  },
-});
+export const prisma = new PrismaClient();
 ```
 
-You need configure jest-prisma by the following steps.
+You can configure jest-prisma by the following steps.
 
 First, declare type of `global.jestPrisma` variable:
 
@@ -148,7 +150,7 @@ And add the path of this declaration to your tsconfig.json:
 }
 ```
 
-Finally, configure jest-prisma environment using `setupFilesAfterEnv`:
+Finally, register your PrismaClient instance to the test environment using `setupFilesAfterEnv`:
 
 ```js
 /* jest.config.mjs */

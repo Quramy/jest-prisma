@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "example-prj-customized-client",
+  "name": "example-prj-prisma-client",
   "version": "1.8.2",
   "scripts": {
     "bootstrap": "npm run generate",
@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@quramy/jest-prisma": "*",
+    "@quramy/jest-prisma-node": "*",
     "@prisma/client": "*",
     "@types/jest": "30.0.0",
     "prisma": "*",
