@@ -186,6 +186,13 @@ function fakeInnerTransactionFactory(
         throw err;
       }
     } else {
+      if (parentTxClient.$transaction) {
+        // Prisma 7.5.0+ handles nested transactions natively with savepoints
+        // No need for manual savepoint management
+        return await parentTxClient.$transaction(arg)
+      }
+
+      // Fallback for Prisma < 7.5.0: use manual savepoint management
       try {
         const result = await arg(parentTxClient);
         if (enableExperimentalRollbackInTransaction) {
@@ -210,11 +217,11 @@ function createProxy(txClient: PrismaClientLike, originalClient: any, options: J
   );
   return new Proxy(txClient, {
     get: (target, name) => {
-      const delegate = target[name as keyof PrismaClientLike];
-      if (delegate) return delegate;
       if (name === "$transaction") {
         return boundFakeTransactionMethod;
       }
+      const delegate = target[name as keyof PrismaClientLike];
+      if (delegate) return delegate;
       if (originalClient[name as keyof PrismaClientLike]) {
         throw new Error(`Unsupported property: ${name.toString()}`);
       }
