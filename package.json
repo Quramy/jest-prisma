@@ -18,7 +18,7 @@
   "author": "Quramy",
   "license": "MIT",
   "devDependencies": {
-    "@prisma/client": "6.19.1",
+    "@prisma/client": "7.10.0",
     "husky": "9.1.6",
     "prettier": "3.3.3",
     "pretty-quick": "4.2.2",
